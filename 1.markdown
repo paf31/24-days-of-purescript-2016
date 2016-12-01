@@ -1,0 +1,49 @@
+# 1. Introduction and Extended Infix Operators
+
+Two years ago, I wrote a [series of blog posts](https://gist.github.com/paf31/8e9177b20ee920480fbc) inspired by Oliver Charles' [24 Days of Hackage](https://ocharles.org.uk/blog/pages/2013-12-01-24-days-of-hackage.html), to highlight some of the great work which was being done in the PureScript community. That original series focused on library development, but this year I've decided to write a series of short blog posts to highlight some of the work being done on the compiler itself.
+
+There has been no shortage of new, interesting libraries to write about since I wrote the original 24 Days of PureScript. In fact, the number of libraries has increased quite a bit, as you can see by looking at [Pursuit](http://pursuit.purescript.org/) or by [searching GitHub](github.com/search?o=desc&q=purescript&ref=cmdform&s=updated&type=Repositories). PureScript is also being used to develop libraries for new types of applications as well, using libraries like [React Native](https://facebook.github.io/react-native/), or building JavaScript to [run on platforms such as AWS Lambda](http://kofno.github.io/2015/10/11/aws-lambda-purescript.html).
+
+However, for as much new library development as we have seen, we have also seen a lot of great features in the compiler, by many new contributors, and much of this development has gone underdocumented. You won't find these features explained in the [PureScript book](https://leanpub.com/purescript/read), or even on the PureScript website for the most part. These have been the "secret features" of the PureScript compiler to a certain extent, which you would only find by combing through the [compiler release notes](https://github.com/purescript/purescript/releases), or joining our [monthly online meetups](https://github.com/purescript/purescript/wiki/PureScript-Meetups). so I would like to take some time to advertise them here instead.
+
+Like last time, guest posts are very welcome, so please get in touch if you are interested in writing a post about one of the recent compiler features that interests you.
+
+Let's get started!
+
+For this first post, I'd like to show a very simple but effective syntactic feature of PureScript, called _extended infix operators_.
+
+First of all, recall that in PureScript, like Haskell, we can apply any function like an infix operator by enclosing its name in backticks.
+
+For example, to combine two lists of gifts (expressed as maps from names of people to names of gists), we might use the [`union`](https://pursuit.purescript.org/packages/purescript-maps/2.0.1/docs/Data.Map#v:union) function from the `Data.Map` module. It makes sense to use this function as an infix operator since it is an associative binary operation on maps: 
+
+```purescript
+import Data.Map (Map, union)
+
+type GiftList = Map Name String
+
+allGifts :: GiftList
+allGifts = list1 `union` list2 where
+  list1 :: GiftList
+  list1 = ...
+  
+  list2 :: GiftList
+  list2 = ...
+```
+
+This can be very useful for improving the readability of PureScript code, if used properly. However, its usefulness is limited if we can only make function _names_ infix. For example, what if instead of assigning only a single gift to each person, we wanted to be able to assign multiple gifts:
+
+```purescript
+type GiftList = Map Name (Array String)
+```
+
+We would probably reach for the [`unionWith`](https://pursuit.purescript.org/packages/purescript-maps/2.0.1/docs/Data.Map#v:unionWith) function, and combine the two arrays for each person in each of the two lists. In Haskell, we wouldn't be able to write this new operator using infix notation, but using an _extended infix operator_, we can:
+
+```purescript
+allGifts = list1 `unionWith mappend` list2
+```
+
+Extended infix operators can be useful in a variety of situations, especially when using higher-order functions like `unionWith`, which take another function as an argument. Other examples include functions like [`zipWith`](https://pursuit.purescript.org/packages/purescript-lists/3.2.1/docs/Data.List#v:zipWith) and [`intersectBy`](https://pursuit.purescript.org/packages/purescript-lists/3.2.1/docs/Data.List#v:intersectBy).
+
+However, it's important not to overuse features like this one. Doing so could quickly lead to unreadable code, but I hope that the example above shows that it can be useful in certain circumstances, and even improve the readability of code slightly.
+
+Until next time!
