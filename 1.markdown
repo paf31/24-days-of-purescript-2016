@@ -14,7 +14,7 @@ For this first post, I'd like to show a very simple but effective syntactic feat
 
 First of all, recall that in PureScript, like Haskell, we can apply any function like an infix operator by enclosing its name in backticks.
 
-For example, to combine two lists of gifts (expressed as maps from names of people to names of gists), we might use the [`union`](https://pursuit.purescript.org/packages/purescript-maps/2.0.1/docs/Data.Map#v:union) function from the `Data.Map` module. It makes sense to use this function as an infix operator since it is an associative binary operation on maps: 
+For example, to combine two lists of gifts (expressed as maps from names of people to names of gifts), we might use the [`union`](https://pursuit.purescript.org/packages/purescript-maps/2.0.1/docs/Data.Map#v:union) function from the `Data.Map` module. It makes sense to use this function as an infix operator since it is an associative binary operation on maps: 
 
 ```purescript
 import Data.Map (Map, union)
