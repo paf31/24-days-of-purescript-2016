@@ -2,7 +2,7 @@
 
 ## List of Articles
 
-1. [Introduction](1-Introduction.markdown)
+1. [Introduction and Extended Infix Operators](1.markdown)
 
 ## License
 
