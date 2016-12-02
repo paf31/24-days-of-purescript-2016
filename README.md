@@ -3,6 +3,7 @@
 ## List of Articles
 
 1. [Introduction and Extended Infix Operators](1.markdown)
+2. [Unicode Syntax](2.markdown)
 
 ## License
 
