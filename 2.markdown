@@ -1,0 +1,59 @@
+# 2. Unicode Syntax
+
+Today's post is just a short note to highlight _unicode syntax_ in PureScript.
+
+If you've used Haskell or [Agda](https://en.wikipedia.org/wiki/Agda_(programming_language)), then you might have seen unicode syntax before. Unicode characters can be quite useful for compactly expressing ideas in code, due to the wealth of characters available.
+
+## Unicode Names
+
+Here's a simple example. You might have seen this definition for the Peano naturals before:
+
+```purescript
+data Nat = Zero | Succ Nat
+```
+
+and associated functions like 
+
+```purescript
+add :: Nat -> Nat -> Nat
+add Zero n = n
+add (Succ n) m = Succ (add n m)
+```
+
+However, we can make our type signatures more compact, by using the standard mathematical symbol `ℕ` instead:
+
+```purescript
+data ℕ = Zero | Succ ℕ
+
+add :: ℕ -> ℕ -> ℕ
+```
+
+In PureScript, names of types and data constructors have to begin with upper-case letters, so `ℕ` is a perfectly good name for a type, since it belongs to the upper-case letter category!
+
+Similarly, we can use lower case unicode letters for the names of type variables or values:
+
+```purescript
+ε :: Number
+ε = 0.001
+```
+
+My favorite example of this was [this pun](https://github.com/slamdata/purescript-halogen/blob/4f39ad77f2cb65b09582c747ae7bb92ba7b5b5cc/docs/Halogen/HTML/Events/Indexed.md#ieventprop) in `purescript-halogen`, where the greek letter ρ (rho) was used in a type variable to represent a "row" of type information.
+
+## Unicode Operators
+
+It's easy to quickly run out of sensible operator names if we're limited to just a handful of characters. Consider just the operators defined in the PureScript Prelude: `<>` for monoidal appends, `<*>` for applicative composition, and so on.
+
+Thankfully, we can use characters from the unicode symbol category to create our operators. This can be quite useful if you're creating a DSL (especially if the operators in your DSL are binary and associative), since there are [so many standard operators available](https://en.wikipedia.org/wiki/Mathematical_Operators) to choose from.
+
+To use a unicode character as an operator, just assign it as an alias for a function in the usual way:
+
+```purescript
+infixr 4 union as ∪
+infixr 5 intersect as ∩
+```
+
+And the best part is that, just like other operator names in PureScript, these aliases get erased during compilation to JavaScript, leaving just the original function names in the generated code!
+
+## Conclusion
+
+Unicode syntax definitely falls into the category of "possibly dangerous" PureScript features, since it makes it easy to write very dense, potentially unreadable code. We don't use unicode syntax in the standard libraries, since it can be a little off-putting at first, but I have used it in some of my own libraries [here](https://github.com/paf31/purescript-isomorphisms/blob/f1a9e59f831cc3150dd9bc7aa66b2661df250ebe/src/Data/Iso.purs#L22) and [there](https://github.com/paf31/purescript-pairing/blob/837638470c58df3971fe2e56395d65f391c9ba00/src/Data/Functor/Pairing.purs#L43). So hopefully this post shows that, used carefully, unicode syntax can be quite a useful little hidden feature.
