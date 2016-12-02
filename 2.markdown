@@ -54,6 +54,14 @@ infixr 5 intersect as ∩
 
 And the best part is that, just like other operator names in PureScript, these aliases get erased during compilation to JavaScript, leaving just the original function names in the generated code!
 
+## Unicode Syntax
+
+The final way to make use of unicode in PureScript programs is to use the available replacements for the syntax of the language itself.
+
+For example, wherever you would use the keyword `forall` to introduce a polymorphic function, you can instead use the `∀` symbol.
+
+Similarly, PureScript allows you to use single character forms of several reserved symbols: `→` and `←` instead of `->` and `<-`, `⇒` and `⇐` instead of `=>` and `<=`, and `∷` instead of `::`. These can be quite useful for writing compact type declarations.
+
 ## Conclusion
 
 Unicode syntax definitely falls into the category of "possibly dangerous" PureScript features, since it makes it easy to write very dense, potentially unreadable code (emoji operators, anyone?). We don't use unicode syntax in the standard libraries, since it can be a little off-putting at first, but I have used it in some of my own libraries [here](https://github.com/paf31/purescript-isomorphisms/blob/f1a9e59f831cc3150dd9bc7aa66b2661df250ebe/src/Data/Iso.purs#L22) and [there](https://github.com/paf31/purescript-pairing/blob/837638470c58df3971fe2e56395d65f391c9ba00/src/Data/Functor/Pairing.purs#L43). So hopefully this post shows that, used carefully, unicode syntax can be quite a useful little hidden feature.
