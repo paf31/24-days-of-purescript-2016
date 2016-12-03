@@ -1,0 +1,51 @@
+# 3. Deriving `Eq` and `Ord`
+
+We put type classes to use all over the core and contrib libraries in PureScript, from monad transformers to profunctor optics, and much more. But for all the advanced abstractions we have available, the best uses of type classes can be the simplest ones.
+
+For example, if you want to work with maps or sets of data in JavaScript, you're pretty much stuck with two types of keys - strings (using JavaScript's objects) or integers (using sparse arrays). But in PureScript we can build map and set structures using any type of key which is a member of the `Ord` type class, which gives us more options and allows us to use our own custom domain-specific data types as keys.
+
+We might want to track people by either their email address or phone number, for example. In that case, it would make the most sense to use a sum type as the key in a dictionary:
+
+```purescript
+import Data.Map (Map)
+
+data PersonKey
+  = ByEmail EmailAddress
+  | ByPhone PhoneNumber
+
+data PersonValue = Naughty | Nice
+
+type Database = Map PersonKey PersonValue
+```
+
+In order to use the operations from `Data.Map` though, we need an instance for `Ord PersonKey` (and also the `Eq` superclass instance). We could write one by hand:
+
+```purescript
+instance eqPersonKey :: Eq PersonKey where
+  eq (ByEmail a) (ByEmail b) = a == b
+  eq (ByPhone a) (ByPhone b) = a == b
+  eq _ _ = false
+  
+instance ordPersonKey :: Ord PersonKey where
+  compare (ByEmail a) (ByEmail b) = compare a b
+  compare (ByEmail _) _           = LT
+  compare (ByPhone a) (ByPhone b) = compare a b
+  compare (ByPhone _) _           = GT
+```
+
+But as we can see, these instances are mostly boilerplate, simply following the shapes of the types. Also, it's easy to make mistakes, particularly when writing `Ord` instances for sum types.
+
+These sorts of instances are so common that the PureScript compiler can just write them for us! And for problems like these, where the code so closely follows the type structure, it makes sense to make the compiler do the work for us.
+
+Simply omit the body of the instance declaration, and add the `derive` keyword at the front, as follows:
+
+```purescript
+derive instance eqPersonKey :: Eq PersonKey
+derive instance ordPersonKey :: Ord PersonKey
+```
+
+and we get valid `Eq` and `Ord` instances for free! Now we can use all of the `Data.Map` and `Data.Set` APIs, and plenty of other generic structures and algorithms with our custom types.
+
+Deriving these instances works for all data types, including those which contain records, as long as the types contained in the fields are themselves instances of `Eq` and `Ord`. This makes `derive` statements particularly useful for generating code involving custom data types.
+
+This obviously doesn't work for every type class, but the compiler does have built-in support for a few other useful type classes. We'll cover these later this month, and see how this sort of code generation can really help cut down the amount of boilerplate code in our applications.
