@@ -3,7 +3,8 @@
 ## List of Articles
 
 1. [Introduction and Extended Infix Operators](1.markdown)
-2. [Unicode Syntax](2.markdown)
+1. [Unicode Syntax](2.markdown)
+1. [`Eq` and `Ord` Deriving](3.markdown)
 
 ## License
 
