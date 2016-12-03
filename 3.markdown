@@ -48,4 +48,11 @@ and we get valid `Eq` and `Ord` instances for free! Now we can use all of the `D
 
 Deriving these instances works for all data types, including those which contain records, as long as the types contained in the fields are themselves instances of `Eq` and `Ord`. This makes `derive` statements particularly useful for generating code involving custom data types.
 
+We can even derive instances when our data type definitions contain type arguments. We just have to make sure to add constraints for the appropriate instances in the context. For example, to derive instances for `Maybe`, we could write: 
+
+```purescript
+derive instance eqMaybe :: Eq a => Eq (Maybe a)
+derive instance ordMaybe :: Ord a => Ord (Maybe a)
+```
+
 This obviously doesn't work for every type class, but the compiler does have built-in support for a few other useful type classes. We'll cover these later this month, and see how this sort of code generation can really help cut down the amount of boilerplate code in our applications.
