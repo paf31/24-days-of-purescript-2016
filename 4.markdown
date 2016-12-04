@@ -1,0 +1,78 @@
+# 4. Newtype Deriving
+
+Newtype deriving was added to the PureScript compiler in the 0.10.1 release, thanks to @garyb. If you've used Haskell before, you might be familiar with its `GeneralizedNewtypeDeriving` language extension. Well, now that feature is available in PureScript too!
+
+Newtypes can be very useful for assigning more type information to an existing type. For example, it's useful to distinguish the following three types of strings from each other, so that we don't accidentally mix up our values:
+
+```purescript
+newtype EmailAddress = EmailAddress String
+
+newtype PhoneNumber = PhoneNumber String
+
+newtype SSN = SSN String
+```
+
+Newtypes are one of the most effective, lightweight tools we have available for making our programs type safe.
+
+But defining type class instances for newtypes can quickly get tedious:
+
+```purescript
+instance eqEmailAddress :: Eq EmailAddress where
+  eq (EmailAddress s1) (EmailAddress s2) = eq s1 s2
+  
+instance eqPhoneNumber :: Eq PhoneNumber where
+  eq (PhoneNumber s1) (PhoneNumber s2) = eq s1 s2
+  
+instance eqSSN :: Eq SSN where
+  eq (SSN s1) (SSN s2) = eq s1 s2
+```
+
+This code is all boilerplate: we create an instance by unpacking and repacking the newtype in each function implementation, and delegating to the corresponding instance for the type inside.
+
+But this is not just inefficient from a development perspective, but also in terms of evaluation - even though the wrapping and unwrapping should be optimized away, we still need to pay for more function abstractions and applications for any curried functions.
+
+However, there is no need for either sort of inefficiency here. Since a newtype has the same representation as the type it wraps at runtime, we should simply be able to reuse the dictionary for the underlying type. PureScript allows us to do this by using a `derive newtype instance` declaration:
+
+```purescript
+derive newtype instance eqEmailAddress :: Eq EmailAddress
+derive newtype instance eqPhoneNumber :: Eq PhoneNumber
+derive newtype instance eqSSN :: Eq SSN
+```
+
+Just like with `Eq` and `Ord` deriving yesterday, this sort of code is a particularly good fit for machine-generated code.
+
+We can derive any instance for any newtype, as long as there is an instance for the same class for the underlying type. But there's more we can do!
+
+Consider this example of a custom monad transformer stack:
+
+```purescript
+newtype App eff a = App (StateT Int (ExceptT String (Eff eff)) a)
+```
+
+This stack uses `StateT` to track an integer state, `ExceptT` to support exceptions of type `String`, and and effect monad at the base.
+
+Perhaps we don't want to expose all of this functionality to our users, so `App` wraps those monad transformers in a `newtype`, and we could provide smart constructors to selectively re-export parts of their functionality. But we can easily derive any instances we do want to provide:
+
+```purescript
+derive newtype instance functorApp :: Functor (App eff)
+derive newtype instance applyApp :: Apply (App eff)
+derive newtype instance applicativeApp :: Applicative (App eff)
+derive newtype instance bindApp :: Bind (App eff)
+derive newtype instance monadApp :: Monad (App eff)
+```
+
+Note that these derived instances are still fine, even though we're partially applying `App` to only its first type argument. This is fine because the compiler can figure out from the definition of `App` that these instances should delegate to the instances for `StateT Int (ExceptT String (Eff eff))`.
+
+We can even derive instances for multi-parameter type classes, as follows:
+
+```purescript
+derive newtype instance monadEffApp :: MonadEff eff (App eff)
+derive newtype instance monadStateApp :: MonadState Int (App eff)
+derive newtype instance monadErrorApp :: MonadError String (App eff)
+```
+
+These are okay since `App` appears in the last type argument.
+
+Newtype deriving can be a really powerful tool for quickly building certain types of DSLs by reusing existing types in this way.
+
+Try out the `App` example using Try PureScript, [here](http://try.purescript.org/?gist=ec91ebe17ca510f1ca36c8a535b292ac).
