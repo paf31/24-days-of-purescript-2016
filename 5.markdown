@@ -1,0 +1,50 @@
+# 5. `Data.Newtype` Deriving
+
+Yesterday, we looked at newtype deriving in PureScript, which landed in compiler version 0.10.1. Today, we're going to look at the _other_ sort of newtype deriving which was released in the same version, _also_ written by @garyb. That's right - PureScript 0.10.1 supports not just one, but two sorts of built-in newtype class deriving!
+
+Wrapping and unwrapping type classes is very common, but quite tedious, as we saw yesterday. Before the 0.10.1 release, the PureScript core libraries were full of unwrapping functions to accompany newtypes: `runAdditive`, `runMultiplicative`, `runConj`, `runDisj`, to name just a few.
+
+In the latest releases, there is a new type class in the `purescript-newtype` package to abstract over these wrapping and unwrapping functions:
+
+```purescript
+class Newtype new old | new -> old where
+  wrap :: old -> new
+  unwrap :: new -> old
+```
+
+This definition is inspired by the class of the same name in the [Haskell `newtype` library](http://hackage.haskell.org/package/newtype-0.2/docs/Control-Newtype.html).
+
+Writing instances for `Newtype` is simple, by providing the newtype constructor (e.g. `Additive`) and a function to unwrap the constructor (like `runAdditive`). But we don't need to write instances by hand - just like for the `Eq` and `Ord` classes that we saw a couple of days ago, the PureScript compiler will derive these instances automatically:
+
+```purescript
+newtype EmailAddress = EmailAddress String
+
+instance showEmailAddress :: Show EmailAddress where
+  show (EmailAddress s) = "(EmailAddress " <> show s <> ")"
+  
+derive instance newtypeEmailAddress :: Newtype EmailAddress _
+```
+
+Notice that when we derive a `Newtype` instance, we only have to provide the first type argument, representing the newtype itself. We don't have to provide the second argument, which represents the type _inside_ the newtype, because the compiler can figure it out. Often, this is quite useful, since the type inside the newtype can be quite large (think of yesterday's monad transformer example).
+
+So wrapping and unwrapping newtypes is all well and good, but what else can we do with the `Newtype` class? Well, quite a lot as it turns out. Several useful functions turn out to be special cases of other functions from the core libraries, modulo some newtype wrapping and unwrapping, so the `purescript-newtype` library provides generic versions of those combinators.
+
+For example, suppose we want to apply a function on strings to a function on email addresses. The `over` function provides a simple way to do this. For example, to upper-case an email address, we can simply lift the `toUpper` function on strings:
+
+```purescript
+upperEmail :: EmailAddress -> EmailAddress
+upperEmail = over EmailAddress toUpper
+```
+
+Similarly, suppose we want to lift a function on containers of strings to a function on containers of email addresses. `overF` allows us to do this. For example, to search for an email address by looking for a domain in the wrapped string:
+
+```purescript
+byDomain :: String -> Array EmailAddress -> Maybe EmailAddress
+byDomain domain = overF EmailAddress (find (contains (wrap domain)))
+```
+
+You can try out these examples using Try PureScript, [here](http://try.purescript.org/?gist=bacc690cae4661e3b4a17755622b5210).
+
+`Data.Newtype` is also a good fit for programming with lenses, since we can write a generic lens (actually an `Iso`) [which works inside any newtype](http://try.purescript.org/?gist=ad66061a9d11a3c59839cc743a0dd561).
+
+So `Data.Newtype` is another example of where type class deriving can really help us to reduce the boilerplate code in our PureScript applications, and achieve a good amount of code reuse.
