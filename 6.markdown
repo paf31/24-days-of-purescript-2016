@@ -16,7 +16,7 @@ Pursuit has supported name search since the initial version. Do you ever find yo
 
 For example, here are [the results of searching for `traverse`](https://pursuit.purescript.org/search?q=traverse).
 
-Thanks to @kritzcreek's work on `psc-ide-server`, and the work of several others on editor plugins, we can also query Pursuit from inside our editors as well. For example, here is the same search inside Atom (thanks to the `atom-ide-purescript` by @nwolverson):
+Thanks to @kritzcreek's work on `psc-ide-server`, and the work of several others on editor plugins, we can also query Pursuit from inside our editors as well. For example, here is the same search inside Atom (thanks to the `atom-ide-purescript` plugin by @nwolverson):
 
 ![Latest Uploads](images/atom-pursuit.png)
 
