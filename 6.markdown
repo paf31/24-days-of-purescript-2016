@@ -8,7 +8,7 @@ Pursuit was created by @hdgarrood during the Google Summer of Code in 2015, and 
 
 Recently, we added a list of the most recent uploads to the front page of Pursuit, so it's easy to see recent activity at a glance:
 
-![Latest Uploads](images/pursuit-latest.png)
+![Latest Uploads](images/pursuit-latest-1.png)
 
 ## Name Search
 
@@ -18,7 +18,7 @@ For example, here are [the results of searching for `traverse`](https://pursuit.
 
 Thanks to @kritzcreek's work on `psc-ide-server`, and the work of several others on editor plugins, we can also query Pursuit from inside our editors as well. For example, here is the same search inside Atom (thanks to the `atom-ide-purescript` plugin by @nwolverson):
 
-![Latest Uploads](images/atom-pursuit.png)
+![Latest Uploads](images/atom-pursuit.png-1)
 
 Similar editor plugins are available for Emacs, Vim and VS Code.
 
