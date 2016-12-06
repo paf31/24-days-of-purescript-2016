@@ -7,6 +7,7 @@
 1. [`Eq` and `Ord` Deriving](3.markdown)
 1. [Newtype Deriving](4.markdown)
 1. [`Data.Newtype` Deriving](5.markdown)
+1. [Pursuit Updates](6.markdown)
 
 ## License
 
