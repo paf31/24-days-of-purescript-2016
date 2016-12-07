@@ -20,9 +20,7 @@ Here, the underscore is an _anonymous function arguments_, because it represents
 
 [Try this example](http://try.purescript.org/?gist=c1c278168960ddce8814bbb8cd330945&backend=core)
 
-We can use anonymous function arguments in a variety of handy places:
-
-```
+We can use anonymous function arguments in a variety of useful situations, as we'll see.
 
 ## Record Accessors
 
