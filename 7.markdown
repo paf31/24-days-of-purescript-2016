@@ -1,0 +1,132 @@
+# 7. Anonymous Function Arguments
+
+Today, I'm going to demonstrate a very simple syntactic feature in PureScript, but one which can be quite useful in practice: _anonymous function arguments_.
+
+## Operator Sections
+
+For the first example, suppose we want to filter a list of integers, choosing the ones below 10. We might do that like this:
+
+```purescript
+filter (\x -> x < 10)
+```
+
+However, with an operator section, this becomes slightly shorter, and reads quite naturally:
+
+```purescript
+filter (_ < 10)
+```
+
+Here, the underscore is an _anonymous function arguments_, because it represents the anonymous argument to the function we wrote before.
+
+[Try this example](http://try.purescript.org/?gist=c1c278168960ddce8814bbb8cd330945&backend=core)
+
+We can use anonymous function arguments in a variety of handy places:
+
+```
+
+## Record Accessors
+
+Suppose you want to map over a collection of records, pulling out only a single field, say the `name` field. You might write that function this way:
+
+```purescript
+map (\x -> x.name)
+```
+
+With an anonymous function argument, this becomes very compact:
+
+```purescript
+map _.name
+```
+
+Thanks to a recent change by @rvion, we can even use an anonymous argument to access fields deeply nested in our records:
+
+```purescript
+map _.customer.address.city
+```
+
+[Try this example](http://try.purescript.org/?gist=19e64df6d9b5291ebce494ef1567f525&backend=core)
+
+## Record Literals
+
+Do you ever find yourself creating functions which build records from their arguments, like this?
+
+```purescript
+\name age -> { name: name, age: age }
+```
+
+With anonymous function arguments, this can be much more compact:
+
+```purescript
+{ name: _, age: _ }
+
+[Try this example](http://try.purescript.org/?gist=0a314b48e63627b9634a6b4a823582ce&backend=core)
+
+## Record Updates
+
+Anonymous functions arguments allow us to not only read and write fields from records, but also to update them.
+
+Instead of updating a collection of records like this:
+
+```purescript
+map (\o -> o { enabled = true })
+```
+
+we can use an anonymous argument to replace `o`:
+
+```purescript
+map (_ { enabled = true })
+```
+
+We can even use anonymous arguments for the _new values_ of the records. Combined with the previous trick, this can be quite useful for creating _lenses_ for record fields in a compact way:
+
+```purescript
+enabledLens = lens _.enabled (_ { enabled = _ })
+```
+
+[Try this example](http://try.purescript.org/?gist=0b49208eb6f4ce763e75fbdd7730d14a&backend=core)
+
+## Lambda Case and Anonymous If-Then-Else
+
+Anonymous function arguments can also be used with `case` statements, and `if..then..else` syntax, which can help to simplify some expressions.
+
+Instead of
+
+```purescript
+fromMaybe :: forall a. a -> Maybe a -> a
+fromMaybe def may = case may of
+  Nothing -> def
+  Just a -> a
+```
+
+we can use an anonymous argument as the scrutinee in the `case` statement:
+
+```purescript
+fromMaybe :: forall a. a -> Maybe a -> a
+fromMaybe def = case _ of
+  Nothing -> def
+  Just a -> a
+```
+
+Similarly, instead of
+
+```purescript
+yesNo :: Boolean -> String
+yesNo = \b -> if b then "Yes" else "No"
+```
+
+we can just write
+
+```purescript
+yesNo :: Boolean -> String
+yesNo = if _ then "Yes" else "No"
+```
+
+In the case of `if..then..else`, we can also abstract over the two possible return values.
+
+[Try this example](http://try.purescript.org/?gist=6000cb9a63b74127902b61cb8beae155&backend=core)
+
+## Conclusion
+
+Hopefully, I've shown that anonymous function arguments can be quite useful as a tool for making code more concise and expressive. However, as with all tricks for making code more point-free, one should exercise some caution to not make code unreadably dense.
+
+That is why PureScript limits anonymous function arguments to only the use cases listed above. Those were the places where we felt it was most obvious what the code would desugar into, with the least risk of enabling very confusing code.
