@@ -9,6 +9,7 @@
 1. [`Data.Newtype` Deriving](5.markdown)
 1. [Pursuit Updates](6.markdown)
 1. [Anonymous Function Arguments](7.markdown)
+1. [PSCi in the Browser](8.markdown)
 
 ## License
 

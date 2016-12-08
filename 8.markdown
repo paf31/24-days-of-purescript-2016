@@ -1,0 +1,62 @@
+# 8. PSCi in the Browser
+
+Did you know that PSCi, the PureScript interactive mode, not only supports evaluation of the compiled JavaScript using Node (its default option), but also in the browser?
+
+This can be really useful for interactively testing APIs which are only available in the browser: the document object model, SVG, canvas graphics and WebGL, web audio, and so on.
+
+To try this out, simply append the `--port` option when starting `psci`:
+
+```text
+$ pulp psci -- --port 8080
+
+PSCi, version 0.10.2
+Type :? for help
+
+Bundling Javascript...
+Serving http://localhost:8080/. Waiting for connections...
+>
+```
+
+At this point, PSCi has pre-compiled all dependencies and created a web server which will listen for connections and serve the necessary resources. To connect, simply navigate to the URL provided in your browser. In the browser console, you should see the message "Connected".
+
+Back in PSCi, you should be able to evaluate expressions as usual:
+
+```text
+> 2 + 2
+4
+> log "Hello"
+Hello
+unit
+```
+
+but now, the evaluation is happening inside the browser window!
+
+Let's see how to use a browser-specific API. If we use Bower to install `purescript-dom`, then we can run methods on the `window` object, like `alert` (but remember to restart PSCi and reload the browser window):
+
+```text
+> import Prelude
+> import DOM.HTML
+> import DOM.HTML.Window
+> window >>= alert "Hello from PSCi!"
+```
+
+You should see an alert in the browser window, followed by the return value `unit` in PSCi.
+
+We can even receive data from the browser, for example by prompting the user to enter some input:
+
+```text
+> window >>= prompt "Enter a string:"
+(Just "I typed this")
+```
+
+You can experiment with the [other methods defined on the `window` object](https://pursuit.purescript.org/packages/purescript-dom/3.3.1/docs/DOM.HTML.Window#v:alert) too.
+
+PSCi in the browser can also be a great way to build interactive applications and to get immediate feedback. For example, here is an experiment I did with interactive canvas graphics using the Web Audio API:
+
+![Latest Uploads](images/psci-browser.png)
+
+(it looks much better when it's moving!)
+
+[And here is the code](https://github.com/paf31/psci-experiment) for anyone who is interested.
+
+Try it out! This new feature hasn't been used very much yet, but we should find out which web APIs are a good fit for this style of programming in PSCi.
