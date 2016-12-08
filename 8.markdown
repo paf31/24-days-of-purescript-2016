@@ -51,7 +51,7 @@ We can even receive data from the browser, for example by prompting the user to 
 
 You can experiment with the [other methods defined on the `window` object](https://pursuit.purescript.org/packages/purescript-dom/3.3.1/docs/DOM.HTML.Window#v:alert) too.
 
-PSCi in the browser can also be a great way to build interactive applications and to get immediate feedback. For example, here is an experiment I did with interactive canvas graphics using the Web Audio API:
+PSCi in the browser can also be a great way to build interactive applications and to get immediate feedback. For example, here is an experiment I did with interactive canvas graphics using the Web Audio API (click to view the video on Youtube):
 
 [![PSCi in the Browser](https://img.youtube.com/vi/SzoI1nD6cQE/0.jpg)](https://www.youtube.com/watch?v=SzoI1nD6cQE)
 
