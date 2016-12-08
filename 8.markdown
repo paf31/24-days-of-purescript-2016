@@ -53,7 +53,7 @@ You can experiment with the [other methods defined on the `window` object](https
 
 PSCi in the browser can also be a great way to build interactive applications and to get immediate feedback. For example, here is an experiment I did with interactive canvas graphics using the Web Audio API:
 
-<iframe width="1280" height="720" src="https://www.youtube.com/embed/SzoI1nD6cQE" frameborder="0" allowfullscreen></iframe>
+[![PSCi in the Browser](https://img.youtube.com/vi/SzoI1nD6cQE/0.jpg)](https://www.youtube.com/watch?v=SzoI1nD6cQE)
 
 [And here is the code](https://github.com/paf31/psci-experiment) for anyone who is interested.
 
