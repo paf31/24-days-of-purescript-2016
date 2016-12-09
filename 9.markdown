@@ -1,0 +1,176 @@
+# 9. Symbols and `IsSymbol` Instances
+
+Today's post is a guest post by [@LiamGoodacre](https://github.com/LiamGoodacre/), who recently added support for symbols to the PureScript compiler.
+
+## What is a Symbol?
+
+A symbol is a type-level representation of a string.  In the same way that the literal string `"cookies"` has type `String`, and the type `String` has kind `*`.  The type `"cookies"` has kind `Symbol`.  Both literal strings and literal symbols have the same syntax, but this is not confusing: as strings live in the land of terms and symbols in the land of types.
+
+Symbols were originally introduced for the `Fail` type class - this allows writing custom error messages in types for when someone tries to use a type class for some specific instance that isn't supported.
+
+We can define a data type with a symbol type argument by annotating the kind of that argument as `Symbol`.  One example of this could be an `SProxy` data type:
+
+``` purescript
+data SProxy (sym :: Symbol) = SProxy
+```
+
+This data type can be used to pass symbol information around.  Indeed this type already exists in the [`purescript-symbols`](https://pursuit.purescript.org/packages/purescript-symbols) library and is used for that purpose.
+
+Another example of a type with symbol arguments could be `TypeConcat`; describing concatenation of symbols.
+
+``` purescript
+TypeConcat :: Symbol -> Symbol -> Symbol
+```
+
+This type already exists as a primitive and has use in the previously mentioned `Fail` type class - used for building custom error messages by concatenating symbols.
+
+Some uses of `TypeConcat` alias it as `<>` to be reflective of semigroup append:
+
+``` purescript
+infixl 6 type TypeConcat as <>
+```
+
+As this type constructor's kind ends in `Symbol`, it cannot have a data constructor - only types of kind `*` allow data.  To construct a term-level token for passing around a concatenation of symbols we could, for example, use one of:
+
+``` purescript
+SProxy :: SProxy (TypeConcat "Merry" "Xmas")
+SProxy :: SProxy ("Merry" <> "Xmas")
+```
+
+## What is `IsSymbol`?
+
+The `IsSymbol` type class classifies symbols that we can generate a runtime string for using the function `reflectSymbol`.
+
+From [purescript-symbols](https://pursuit.purescript.org/packages/purescript-symbols) this type class is defined as:
+
+``` purescript
+class IsSymbol (sym :: Symbol) where
+  reflectSymbol :: SProxy sym -> String
+```
+
+Here we're using `SProxy` to tell `reflectSymbol` which symbol to generate a string for.
+
+Note that passing the symbol to `reflectSymbol` is essential, if we defined `IsSymbol` as:
+
+``` purescript
+class IsSymbol (sym :: Symbol) where
+  reflectSymbol' :: String
+```
+
+A use of `reflectSymbol'` can't tell the compiler which symbol to generate a string for.  Thus we need some term level representation of the symbol that we can pass around.  `SProxy` is our chosen representation for this.
+
+
+## `IsSymbol` for Literals and `TypeConcat`
+
+For literal symbols such as `"tinsel"`, the compiler (version 0.10.3 onwards) will automatically solve `IsSymbol` instances.  Therefore, the following expression would evaluate to the string `"tinsel"`:
+
+``` purescript
+reflectSymbol (SProxy :: SProxy "tinsel")
+```
+
+If you look at `IsSymbol` on [pursuit](https://pursuit.purescript.org/packages/purescript-symbols/2.0.0/docs/Data.Symbol#t:IsSymbol), you'll see that it has an instance for `TypeConcat`, which is defined as:
+
+``` purescript
+instance isSymbolTypeConcat :: (IsSymbol left, IsSymbol right) => IsSymbol (TypeConcat left right) where
+  reflectSymbol _ = reflectSymbol (SProxy :: SProxy left) <> reflectSymbol (SProxy :: SProxy right)
+```
+
+This is essentially saying that to reflect a pair of concatenated symbols: reflect each symbol and append the results.
+
+Here is an example evaluation for reflecting with `TypeConcat`:
+
+``` purescript
+reflectSymbol (SProxy :: SProxy ("coo" <> "kies"))
+-- ^ starting expression
+
+reflectSymbol (SProxy :: SProxy "coo") <> reflectSymbol (SProxy :: SProxy "kies")
+-- ^ by the definition of reflectSymbol for TypeConcat
+
+"coo" <> reflectSymbol (SProxy :: SProxy "kies")
+-- ^ by the definition of reflectSymbol for the symbol "coo"
+
+"coo" <> "kies"
+-- ^ by the definition of reflectSymbol for the symbol "kies"
+
+"cookies"
+-- ^ a delicious result
+```
+
+
+## Example Usage
+
+In this section I'll explain a very simple data type for concatenating strings using a separator.  To do this we'll keep track of the separator string using a symbol in the type, and allow a monoid instance for concatenating the elements.  Here's an example of the sort of programs we could write:
+
+``` purescript
+seasonalPhrases :: Sep ", "
+seasonalPhrases = sep "Merry Christmas" <> sep "Ho ho ho" <> sep "Bah Humbug"
+
+main = log (renderSep seasonalPhrases)
+```
+
+With the output:
+
+```
+Merry Christmas, Ho ho ho, Bah Humbug
+```
+
+So firstly you'll notice we have our type `Sep` and the two functions `sep` and `renderSep`, here are their types/kinds:
+
+``` purescript
+Sep :: Symbol -> *
+sep :: forall s. String -> Sep s
+renderSep :: forall s. IsSymbol s => Sep s -> String
+```
+
+So `sep` takes a string and lifts it up into our `Sep` type regardless of what our separator is.  Whereas `renderSep` converts our built up `Sep` back into a string: this will be the concatenation of all the lifted strings separated with a reflection of the symbol in the type.  Here we see the `IsSymbol` class in use; we need to be able to generate a runtime string from the symbol we're tracking in the type to be able to join the strings together with it.
+
+Here's the definition of `Sep` and `sep`:
+
+``` purescript
+newtype Sep (s :: Symbol) = Sep (Array String)
+
+sep :: forall s. String -> Sep s
+sep s = Sep [s]
+```
+
+Just wrapping an array of strings here gives us an easy job of defining our `Semigroup` and `Monoid` instances by delegating to the existing instances defined for array:
+
+``` purescript
+derive newtype instance semigroupSep :: Semigroup (Sep s)
+derive newtype instance monoidSep :: Monoid (Sep s)
+```
+
+Then for `renderSep` we can reflect the separator symbol to get it's string representation, and then use it to join the elements in our array.  The `joinWith` function from [purescript-strings](https://pursuit.purescript.org/packages/purescript-strings) does the concatenation for us:
+
+``` purescript
+-- joinWith :: Array String -> String
+-- reflectSymbol :: forall s. IsSymbol s => SProxy s -> String
+
+renderSep :: forall s. IsSymbol s => Sep s -> String
+renderSep (Sep items) = let sep = reflectSymbol (SProxy :: SProxy s)
+                        in joinWith sep items
+```
+
+So this allows us to combine strings based on separators statically defined at compile time.  But we can also use the same data type to deal with runtime defined separators.  To do this we'll need a function called `reifySymbol` also from [purescript-symbols](https://pursuit.purescript.org/packages/purescript-symbols):
+
+``` purescript
+reifySymbol :: forall r. String -> (forall sym. IsSymbol sym => SProxy sym -> r) -> r
+```
+
+What this function does for us is take an operation that can work with any `IsSymbol` and use it with a runtime string.  Here's an example using this with `Sep`:
+
+``` purescript
+comeFrom :: forall s. IsSymbol s => SProxy s -> String
+comeFrom _ = renderSep (sep "I come from " <> sep "!!!" :: Sep s)
+
+main = do
+  log (reifySymbol "runtime" comeFrom)
+  log (comeFrom (SProxy :: SProxy "compile"))
+```
+
+With the output:
+
+```
+I come from runtime!!!
+I come from compile!!!
+```

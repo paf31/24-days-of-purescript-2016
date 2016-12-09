@@ -10,6 +10,7 @@
 1. [Pursuit Updates](6.markdown)
 1. [Anonymous Function Arguments](7.markdown)
 1. [PSCi in the Browser](8.markdown)
+1. [Symbols and `IsSymbol` Instances](9.markdown) by [@LiamGoodacre](https://github.com/LiamGoodacre/)
 
 ## License
 
