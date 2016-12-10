@@ -1,0 +1,91 @@
+# 10. Functional Dependencies
+
+Functional dependencies landed in compiler version 0.10.1. At first, functional dependencies seem like a relatively advanced feature of the type checker, with some pleasant consequences for the quality of type inference and error messages. But functional dependencies are quite a lot more than this - they represent the first steps towards allowing rich _type-level programming_ in PureScript.
+
+To demonstrate why functional dependencies are interesting, I'll show some examples of code which have cropped up in the short amount of time since functional dependencies were added.
+
+But first, let's recall a simpler type system feature: multi-parameter type classes.
+
+## Multi-parameter Type Classes
+
+Type classes of one argument represent _predicates_ on types.
+
+For example, the [`Eq`](https://pursuit.purescript.org/packages/purescript-prelude/2.1.0/docs/Data.Eq#t:Eq) class represents the predicate which states that a type has decidable equality. The `eq` function defined by the `Eq` class is the _evidence_ for this claim.
+
+But PureScript is not restricted to type classes of one argument. Type classes can have _zero or more_ type arguments.
+
+Type classes with no arguments (or _nullary_ type classes) represent _assertions_. For example, the `Partial` class represents the assertion that the developer is aware that they are using partial functions.
+
+Type classes with two or more type arguments represent _relations_ between types. For example:
+
+- The [`MonadEff`](https://pursuit.purescript.org/packages/purescript-eff/2.0.0/docs/Control.Monad.Eff.Class#t:MonadEff) class represents a relationship between a monad and the effects it manages via the `Eff` monad. 
+- The [`Parallel`](https://pursuit.purescript.org/packages/purescript-parallel/2.1.0/docs/Control.Parallel.Class#t:Parallel) class represents a relationship between a monad and an applicative functor, such that we can use the applicative functor to execute commands in parallel.
+
+## Functional Relations
+
+But many type classes with multiple type arguments represent _more_ than just relations. Several type classes represent _functions_ between types. Functional dependencies allow us to capture these sorts of relations between type arguments:
+
+- In the `MonadEff` case, we can think of the relationship between a monad and its row of effects as like a function - the monad determines the effect row uniquely.
+- The `Parallel` class represents a _correspondence_ between monads and applicative functors. Each side of the pair determines the other uniquely.
+
+Now we can write:
+
+```purescript
+class MonadEff eff m | m -> eff where 
+  ...
+  
+class Parallel f m | m -> f, f -> m where
+  ...
+```
+
+to assert that the relation between types is functional in one or more directions.
+
+Prior to 0.10.3, we had no way to communicate this information to the type checker. But now, the type checker can use this information to aid type inference, or to provide better error messages. 
+
+For example, if the type checker knows the monad `m` in a `MonadEff eff m` constraint, then it doesn't need to know `eff`, because `m` determines `eff` due to the functional dependency. So the compiler can commit to choosing the instance, and fill in the corresponding type for `eff`, based on the type `m`.
+
+If you've ever encountered the sorts of errors which came out of the type checker before 0.10.1 when using monad transformers, then you should appreciate this sort of inference in the latest compiler!
+
+## Applications
+
+Now, here are some of the things which have been built using functional dependencies already:
+
+### Length-indexed Lists (@bodil)
+
+Soon after 0.10.1 was released, @bodil released the [`purescript-typelevel`](https://pursuit.purescript.org/packages/purescript-typelevel) library, which contained a definition of type-level natural numbers and used functional dependencies to express functions between them.
+
+The library allows the user to add, subtract, multiply, divide and compare type-level natural numbers. And remember that all of these computations are taking place inside the type-checker at compile-time!
+
+Using type-level natural numbers, it is possible to define a type of length-indexed lists (or _vectors_). These are provided by @bodil's [`purescript-sized-vectors`](https://pursuit.purescript.org/packages/purescript-sized-vectors) library.
+
+As an example, the library gives the following type to the list concatenation function:
+
+```purescript
+concat :: forall s1 s2 s3 a
+        . (Nat s1, Nat s2, Add s1 s2 s3)
+       => Vec s1 a
+       -> Vec s2 a
+       -> Vec s3 a
+```
+
+This type encodes the invariant that lengths add as we concatenate vectors. And using functional dependencies, the compiler can compute the length of the result from the lengths of the inputs.
+
+This allows us to make assertions about the lengths of lists at compile-time, avoiding out-of-range errors.
+
+### Type-Level 2-3 Trees (@LiamGoodacre)
+
+@LiamGoodacre recently implemented type-level maps, from symbols (type-level strings) to types, as type-level 2-3 trees in his [`purescript-type-map`](https://github.com/LiamGoodacre/purescript-type-map) library.
+
+This library could provide the basis for an interesting alternative to row polymorphism, allowing us to talk about rows of types using functional dependencies. In fact, this sort of approach could allow us to assert far more interesting claims about rows than the current system does, because we have an entire Turing-complete language at the type level which we can work with.  
+
+### Type-Level Lambda Calculus (@LiamGoodacre)
+
+If you're not convinced that functional dependencies give us a Turing-complete language for type-level programming, then take a look at this [lambda calculus interpreter](https://github.com/LiamGoodacre/purescript-type-lang), implemented in the type system using functional dependencies, also by @LiamGoodacre.
+
+This system allows the user to write any lambda calculus term at the type level, including abstractions and applications. Some primitives such as type-level strings and booleans are also supported. We can then evaluate those terms to normal form _at compile time_ inside the type checker!
+
+We could use this to write arbitrary programs to validate our assertions about values _in our types_ (although doing so at the moment would be quite cumbersome!)
+
+## Conclusion
+
+I hope I've shown that functional dependencies vastly improve the support for type-level programming in the compiler. Tomorrow I'll show a practical application of functional dependencies in the core libraries.
