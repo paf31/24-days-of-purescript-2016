@@ -21,7 +21,7 @@ Type classes with two or more type arguments represent _relations_ between types
 - The [`MonadEff`](https://pursuit.purescript.org/packages/purescript-eff/2.0.0/docs/Control.Monad.Eff.Class#t:MonadEff) class represents a relationship between a monad and the effects it manages via the `Eff` monad. 
 - The [`Parallel`](https://pursuit.purescript.org/packages/purescript-parallel/2.1.0/docs/Control.Parallel.Class#t:Parallel) class represents a relationship between a monad and an applicative functor, such that we can use the applicative functor to execute commands in parallel.
 
-## Functional Relations
+## Relations and Functions
 
 But many type classes with multiple type arguments represent _more_ than just relations. Several type classes represent _functions_ between types. Functional dependencies allow us to capture these sorts of relations between type arguments:
 
