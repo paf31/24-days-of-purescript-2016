@@ -40,7 +40,7 @@ class Parallel f m | m -> f, f -> m where
 
 to assert that the relation between types is functional in one or more directions.
 
-Prior to 0.10.3, we had no way to communicate this information to the type checker. But now, the type checker can use this information to aid type inference, or to provide better error messages. 
+Prior to 0.10.1, we had no way to communicate this information to the type checker. But now, the type checker can use this information to aid type inference, or to provide better error messages. 
 
 For example, if the type checker knows the monad `m` in a `MonadEff eff m` constraint, then it doesn't need to know `eff`, because `m` determines `eff` due to the functional dependency. So the compiler can commit to choosing the instance, and fill in the corresponding type for `eff`, based on the type `m`.
 
