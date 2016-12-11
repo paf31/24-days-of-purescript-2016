@@ -1,0 +1,123 @@
+# 11. Generic Deriving
+
+Generic programming allows us to avoid writing boilerplate code, by inferring the implementations of functions from the shapes of the types involved. In Haskell and PureScript, this is supported by _generic deriving_, where the compiler supports deriving certain standard type class instances to facilitate generic programming.
+
+Generic deriving has been available in the PureScript compiler in one form for a while now.
+@gbaz added the first generics implementation in version 0.7.3, and it was quickly put to use to derive all manner of programs: standard type classes instances like `Eq` and `Ord`, serializers and deserializers for formats like JSON and S-expressions, QuickCheck instances, memoization functions, and so on. This has provided massive benefits for developer productivity in PureScript.
+
+The original version of PureScript's generics (in the [`purescript-generics`](https://pursuit.purescript.org/packages/purescript-generics) library) is based on a single untyped representation called `GenericSpine`. The `Generic` class attempts to convert to and from this representation:
+
+```purescript
+class Generic a where
+  toSpine :: a -> GenericSpine
+  fromSpine :: GenericSpine -> Maybe a
+  toSignature :: Proxy a -> GenericSignature
+```
+
+Notice here that in the `fromSpine` function, we have to use `Maybe`, because there is no guarantee that the representation given to us will be of the correct shape. We can use the `toSignature` function _at runtime_ to verify that a given `GenericSpine` is in the correct form.
+
+## Typed Generics via Functional Dependencies
+
+But what we'd really like is to be able to associate a _type_ of representations with a given generic type, and convert to and from that representation. This is the approach taken in GHC Haskell's [`GHC.Generics`] (https://hackage.haskell.org/package/base-4.9.0.0/docs/GHC-Generics.html) library:
+
+```haskell
+class Generic a where
+  type Rep a :: * -> *
+  
+  from  :: a -> (Rep a) x
+  to    :: (Rep a) x -> a
+```
+
+This implementation uses an _associated type_ called `Rep a` to track the representation of the data.
+
+Well, in PureScript we don't have associated types (PR anyone...?), but we have the next best thing - functional dependencies!
+
+As we saw yesterday, functional dependencies can be used to represent certain type-level functions. The new [`purescript-generics-rep`](https://pursuit.purescript.org/packages/purescript-generics-rep) library takes this approach, capturing the representation type using a functional dependency, like this:
+
+```purescript
+class Generic a rep | a -> rep where
+  from :: a -> rep
+  to :: rep -> a
+```
+
+The representation types are built out of a small collection of [standard representation types](https://pursuit.purescript.org/packages/purescript-generics-rep/4.0.0/docs/Data.Generic.Rep) for things like data constructors, sums and products.
+
+The functional dependency tells us that the representation type `rep` is determined from the generic type `a`, and so if the compiler knows `a`, then it can infer `rep`.
+
+## Deriving `Generic` instances
+
+As of compiler version 0.10.2, it is possible to derive these `Generic` instances automatically:
+
+```purescript
+data List a = Nil | Cons { head :: a, tail :: List a }
+
+derive instance genericList :: Generic (List a) _
+```
+
+Notice how we don't specify the representation type when deriving an instance - instead, the compiler will infer it from the data type definition. And this is a good thing, because even in this simple case, the compiler will infer quite a large type:
+
+```purescript
+Sum 
+  (Constructor "Nil" NoArguments) 
+  (Constructor "Cons" 
+    (Rec 
+      (Product 
+        (Field "head" a) 
+        (Field "tail" 
+          (List a)
+        )
+      )
+    )
+  )
+```
+
+Notice that the compiler can even derive `Generic` instances and representation type for recursive types and record types.
+
+The compiler uses type-level strings (symbols) to represent things like data constructor names and record field names.
+
+## Writing Generic Functions
+
+The `purescript-generics-rep` library provides default implementations of various standard type classes for any type which is an instance of `Generic`:
+
+- `Eq`
+- `Ord`
+- `Show`
+- `Semigroup`
+- `Monoid`
+
+How does it do this? Well, as an example, let's take a look at the `genericShow` function, which is used to derive `Show` instances. Here is its type:
+
+```purescript
+genericShow 
+  :: forall a rep
+   . (Generic a rep, GenericShow rep)
+  => a
+  -> String
+```
+
+We can use this to derive a `Show` instance for our types (as long as we have already derived a `Generic` instance) as follows:
+
+```purescript
+instance showList :: Show a => Show (List a) where
+  show x = genericShow x
+```
+
+The type of `genericShow` says that we can get a function of type `a -> String` as long as the type `a` is `Generic` with some representation type `rep`, and the representation type itself has an instance for the `GenericShow` class.
+
+See the implementation in full [here](https://pursuit.purescript.org/packages/purescript-generics-rep/4.0.0/docs/Data.Generic.Rep.Show).
+
+This is the general pattern used when deriving functions using `generics-rep`: we use the `Generic` class to infer a representation type, and then defer to some auxiliary type class defined on the representation types themselves.
+
+_Note_: this is also a nice example of the `IsSymbol` class, since we often need to turn the type-level strings which represent our data constructors and record fields into actual value-level strings, for example to `show` them.
+
+## Benefits of the Typed Approach
+
+Getting rid of the `Maybe` in the type of `fromSpine` is not the only benefit of the typed approach using functional dependencies.
+
+One disadvantage of an untyped approach is that the entire type has to be representable by the single `GenericSpine` type. For example, we are not able to derive instances for any type which makes use of foreign data types, since those cannot be made instances of `Generic`. But with the typed approach, we can simply use the instances on the foreign type itself. This allows us to derive instances for many more types.
+
+Also, separating out the representation type means that we don't need to provide instances for _every_ representation type. For example, the derived `Semigroup` instances provided by `purescript-generics-rep` only work for types built out of products and records. We simply can't derive those instances if our types include sums types. With a single untyped representation type, we have to try to derive an instance for _every_ representation, whether it is possible or not.
+
+## Conclusion
+
+I hope I've shown that generic deriving enables a whole new style of programming in PureScript, where we can write our boilerplate code once and focus on the interesting parts of our application. Hopefully, the new `generics-rep` implementation will increase the utility of generic programming in PureScript.
