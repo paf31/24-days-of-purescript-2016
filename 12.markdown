@@ -1,0 +1,56 @@
+# 12. Suggestions
+
+This week I'd like to take a look at some of the editor-specific features which have been added to the compiler in recent versions.
+
+The PureScript compiler ships with `psc-ide`, which is a server for a common protocol used by plugins in Atom, Vim, Emacs and VS Code, to provide support for working with PureScript projects. @kritzcreek is the creator and maintainer of `psc-ide`.
+
+Today, I'd like to look at _suggestions_, one of the editor-specific features supported by the PureScript compiler. This feature was added by @nwolverson, and it is supported in many of the editor plugins listed above.
+
+## Warnings
+
+If you've used PureScript at all, you'll have noticed that the compiler generates a lot of warnings. And you can't turn them off! This can be quite irritating, but all of the warnings are there to either improve readability or prevent future breakage of your code.
+
+Here are some examples:
+
+- An import is unused
+- An import is a duplicate
+- An import of a name is implicit
+- A top-level value declaration lacks a type declaration
+- A type wildcard can be replaced
+
+In each of these cases, the compiler can give a suggested fix. For example, it can suggest removing any unused imports.
+
+Instead of allowing you to turn these warnings off, we instead try to make it as simple as possible to fix the problem. So in many cases, the compiler includes a suggestion in the warning message:
+
+```text
+No type declaration was provided for the top-level declaration of main.
+It is good practice to provide type declarations as a form of documentation.
+The inferred type of main was:
+
+  forall t1.
+    Eff
+      ( console :: CONSOLE
+      | t1
+      )
+      Unit
+
+in value declaration main
+```
+
+## `--json-errors`
+
+If you pass the `--json-errors` flag to the compiler, it will return its errors and warnings in a structured JSON format, so that editors can present the data in a more useful way, and provide appropriate actions for the user to take.
+
+If the compiler provides a suggestion, then `--json-errors` will pass the suggested fix to the editor, so that the editor can allow the user to easily fix the problem!
+
+## `pscid`
+
+To demonstrate compiler suggestions, I'm not going to actually use one of the editors listed above, but instead use [`pscid`](https://github.com/kRITZCREEK/pscid), a minimal terminal-based IDE built by @kritzcreek.
+
+`pscid` is one of my favorite PureScript tools, because it works everywhere and with any editor. Like [`ghcid`](https://github.com/ndmitchell/ghcid) in Haskell, it works by watching files on the disk and rebuilding them as necessary. It prints one warning or error at a time, and crucially it also provides the ability to apply any suggestions to the file on disk.
+
+You can install `pscid` by running `npm install -g pscid`.
+
+The suggestions feature is best demonstrated by showing it in action, so please check out the following screencast which shows several of the warnings listed above being fixed as I edit a file. At each warning here, I am simply pressing the `s` key to apply the appropriate suggestion, and `psc-ide` is fixing the file accordingly.
+
+[![asciicast](https://asciinema.org/a/1z3g4yjw5zos15wajqnpn7bwr.png)](https://asciinema.org/a/1z3g4yjw5zos15wajqnpn7bwr)
