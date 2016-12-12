@@ -13,6 +13,7 @@
 1. [Symbols and `IsSymbol` Instances](9.markdown) by [@LiamGoodacre](https://github.com/LiamGoodacre/)
 1. [Functional Dependencies](10.markdown)
 1. [Generic Deriving](11.markdown)
+1. [Suggestions](12.markdown)
 
 ## License
 
