@@ -1,0 +1,56 @@
+# 13. `psc-ide` - Add import
+
+Continuing this week's theme of editor support in PureScript, today's post will look at `psc-ide`'s support for module imports. Today's post is a guest post by @kritzcreek, the author of `psc-ide`.
+
+-----
+
+One of the most useful features of `psc-ide` is the ability to add imports for a given identifier. The examples I'll present will show the Emacs integration for `psc-ide`, but the same commands are available inside Atom, VSCode or Vim.
+
+Given the following module the compiler will complain about a missing type `Maybe`, and unknown values `maybe` and `log`.
+```haskell
+module Main where
+
+import Prelude
+
+type Person = {name  :: String, title :: Maybe String }
+
+showPerson :: Person -> String
+showPerson p = 
+  let
+    title = maybe "" (_ <> " ") p.title
+  in 
+    title <> p.name
+    
+main = 
+  log (showPerson {name: "Christoph", title: Just "Peasant"})
+```
+
+If we put our cursor on top of `Maybe` now and execute the `psc-ide-add-import` command `psc-ide` modifies our import section like so:
+
+```haskell
+import Prelude
+import Data.Maybe (Maybe)
+```
+
+We can do the same for `maybe` and `log`, but for the `log` identifier we get a little pop-up asking us whether we meant `log` from `Control.Monad.Eff.Console` or `Math`.
+
+<img src="http://i.imgur.com/SUL6qmo.gif" width="450" />
+
+We can choose the console log and end up with:
+
+```haskell
+import Prelude
+import Control.Monad.Eff.Console (log)
+import Data.Maybe (Maybe, maybe)
+```
+
+`psc-ide` extended the explicit imports from `Data.Maybe` and also sorts the imports which makes for less noise in git diffs. The last remaining problem is that the import for `Maybe` only imports the type and not its data constructors. When compiling the module now the compiler will complain about the unknown data constructor `Just`. Running the add import command one last time on `Just` extends the import for the `Maybe` type to also include its constructors like so:
+
+```haskell
+import Data.Maybe (Maybe(..), maybe)
+```
+
+While this is a massive improvement over manually searching for identifiers and managing the import section, `psc-ide` adding imports really shines when used in conjunction with auto-completion:
+
+
+<img src="http://i.imgur.com/dKyB73V.gif" width="550" />
