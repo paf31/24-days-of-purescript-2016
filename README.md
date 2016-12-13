@@ -14,6 +14,7 @@
 1. [Functional Dependencies](10.markdown)
 1. [Generic Deriving](11.markdown)
 1. [Suggestions](12.markdown)
+1. [`psc-ide` - Add Import](13.markdown) by [@kritzcreek](https://github.com/kritzcreek/)
 
 ## License
 
