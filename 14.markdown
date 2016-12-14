@@ -1,0 +1,9 @@
+# 14. Go to Definition
+
+Today's post is very brief, but I wanted to highlight a feature which was recently added to `psc-ide` - the ability to jump to the definition of the name under the cursor.
+
+This feature is available in the editor plugins for Emacs, Vim, Atom and VS Code, but I'll show it here in Atom. Simply use the appropriate shortcut (Ctrl+⌘+G on my Mac) while the cursor hovers over the name you want, or right-click, and select the Go to definition option from the PureScript submenu.
+
+![Go to Definition](images/atom-goto.gif)
+
+`psc-ide` keeps an index of all type constructors, data constructors, type classes, top-level values, etc. by their name, which makes this operation useful in lots of situations, and instantaneous!
