@@ -7,3 +7,7 @@ This feature is available in the editor plugins for Emacs, Vim, Atom and VS Code
 ![Go to Definition](images/atom-go-to-definition.gif)
 
 `psc-ide` keeps an index of all type constructors, data constructors, type classes, top-level values, etc. by their name, which makes this operation useful in lots of situations, and instantaneous!
+
+In fact, it can even use this index of names to fix typos in your code. On the same menu, simply choose "Fix typo", and select from the available options:
+
+![Fix Typo](images/atom-fix-typo.gif)
