@@ -11,3 +11,5 @@ This feature is available in the editor plugins for Emacs, Vim, Atom and VS Code
 In fact, it can even use this index of names to fix typos in your code. On the same menu, simply choose "Fix typo", and select from the available options:
 
 ![Fix Typo](images/atom-fix-typo.gif)
+
+If these features aren't working for you, remember you have to build your dependencies at least once so that `psc-ide` can use the build products to build its index. So try running `pulp build` and restarting `psc-ide-server` if you are having problems.
