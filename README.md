@@ -16,7 +16,7 @@
 1. [Suggestions](12.markdown)
 1. [Add Import](13.markdown) by [@kritzcreek](https://github.com/kritzcreek/)
 1. [Go to Definition](14.markdown)
-1. [Instant Rebiuild](15.markdown) by [@chexxor](https://github.com/chexxor)
+1. [Instant Rebuild](15.markdown) by [@chexxor](https://github.com/chexxor)
 
 ## License
 
