@@ -9,7 +9,7 @@ One non-technical aspect of a programming language experience is the time betwee
 
 ### PSC-IDE
 
-Psc-ide is similar to PSCI in that it is a long-running process which enable you to make queries about your code and get answers quickly. To collect information to use to answer your queries, psc-ide parses your project into an AST and collects IDE-relevant information from there. Then, to keep this information up-to-date as you change source files, psc-ide will automatically reload files as they change by subscribing to filesystem events or by polling for changes. Because psc-ide stores in-memory the types of the entire project, it can compile and type-check a single file without reloading & type-checking its entire dependency tree. This is what enables it to perform near-instant rebuilds of a PureScript file.
+Psc-ide is similar to PSCI in that it is a long-running process which enables you to make queries about your code and get answers quickly. To collect information to use to answer your queries, psc-ide parses your project into an AST and collects IDE-relevant information from there. Then, to keep this information up-to-date as you change source files, psc-ide will automatically reload files as they change by subscribing to filesystem events or by polling for changes. Because psc-ide stores in-memory the types of the entire project, it can compile and type-check a single file without reloading & type-checking its entire dependency tree. This is what enables it to perform near-instant rebuilds of a PureScript file.
 
 ### Instant Rebuilds
 
