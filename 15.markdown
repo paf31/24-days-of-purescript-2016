@@ -1,0 +1,74 @@
+
+# 15. Instant Rebuild
+
+Today's post is a guest post by [@chexxor](https://github.com/chexxor), which gives an introduction to the `psc-ide` protocol, and the instant rebuild command in particular.
+
+-----
+
+One non-technical aspect of a programming language experience is the time between changing code and seeing the effects of that change - the "feedback cycle". The length of a feedback cycle in the default setup of most languages is dozens of seconds or even minutes, as you usually need to send the entire project through the compiler after changing a single line in a single file. Reducing this feedback cycle is the goal of the psc-ide project, written by [@kRITZCREEK](https://github.com/kRITZCREEK), and it succeeds. How does it work? Let's take a look.
+
+### PSC-IDE
+
+Psc-ide is similar to PSCI in that it is a long-running process which enable you to make queries about your code and get answers quickly. To collect information to use to answer your queries, psc-ide parses your project into an AST and collects IDE-relevant information from there. Then, to keep this information up-to-date as you change source files, psc-ide will automatically reload files as they change by subscribing to filesystem events or by polling for changes. Because psc-ide stores in-memory the types of the entire project, it can compile and type-check a single file without reloading & type-checking its entire dependency tree. This is what enables it to perform near-instant rebuilds of a PureScript file.
+
+### Instant Rebuilds
+
+Most PureScript editor plugins communicate with psc-ide for you, so you don't need to know how it works. But, we're curious folk, so let's look at how to interface with psc-ide to instant-rebuild a file.
+
+First, we start an instance of psc-ide-server for our project. We can optionally pass a glob of our project's source files, as when invoking the compiler. Doing so will provide more information in responses, such as a function's inline documentation or the position of an identifier's definition.
+
+``` bash
+$ psc-ide-server -p 4242 'bower_components/purescript-*/src/**/*.purs' 'test/**/*.purs' 'src/**/*.purs'
+```
+
+With the psc-ide-server running, we can send queries to it after loading the modules we want to work with. Specifying no parameters will use whatever modules psc-ide can find in our project. Looking at [the Rebuild command documentation](https://github.com/purescript/purescript/blob/master/psc-ide-server/PROTOCOL.md#rebuild) we can see how to structure the query to rebuild a file. The response to this query will contain information similar to the response given by the PureScript compiler - errors, warnings, and suggestions.
+
+In this example, we rebuild a file which had imported the Pux.CSS module but didn't use it at all. This caused the compiler to suggest us to remove it. Having position and replacement information like this enables editors to easily apply the compiler's suggestions.
+
+
+``` bash
+$ psc-ide-client -p 4242 # waits for string on stdin
+{"command": "load"}
+# response
+{"result":"Loaded 506 modules and 506 source files.","resultType":"success"}
+$ psc-ide-client -p 4242 # waits for string on stdin
+{"command": "rebuild", "params": {"file": "/home/chexxor/Projects/WishlistApp/src/Layout.purs"}}
+# response (formatted)
+{ "result": [
+    { "suggestion": {
+        "replaceRange": {
+          "startLine": 23, "endLine": 23,
+          "startColumn": 1, "endColumn": 39
+        },
+        "replacement": ""
+      },
+      "moduleName": "App.Layout",
+      "errorLink": "https:\/\/github.com\/purescript\/purescript\/wiki\/Error-Code-UnusedImport",
+      "errorCode": "UnusedImport",
+      "message": "  The import of module Pux.CSS is redundant\n",
+      "filename": "\/home\/chexxor\/Projects\/WishlistApp\/src\/Layout.purs",
+      "position": {
+        "startLine": 23, "endLine": 23,
+        "startColumn": 1, "endColumn": 39
+      }
+    }
+  ],
+  "resultType": "success"
+}
+```
+
+Alternatively, you can use any program which sends TCP requests, such as `nc`.
+
+``` bash
+$ echo -n '{"command": "load"}' | nc localhost 4242
+```
+
+### Managing PSC-IDE
+
+As you can see, psc-ide expects you to request an instant rebuild of a file, which is a bit laborious. Instead of this, editor plugin authors have decided it's better to simply rebuild a file every time it's saved. Editors fire events when a file is saved, which enables plugin authors to easily do this. Instant rebuild is fast enough, so why not?
+
+If you aren't using an editor having a PureScript plugin, you still have a way to avoid to instant rebuild your PureScript files without sending raw psc-ide commands. The [pscid](https://github.com/kRITZCREEK/pscid) CLI tool, which is written in PureScript, manages psc-ide for you, like editors do, by using the [purescript-psc-ide](https://github.com/kRITZCREEK/purescript-psc-ide) library to interface with psc-ide. It doesn't have editor events on which to listen, so it subscribes to filesystem events to send the rebuild command when a file in your project changes. To use it, simply start pscid and leave it running in a terminal tab while you edit files, then go back to the terminal tab to see errors or apply suggestions by pressing the `s` key.
+
+## Conclusion
+
+You may never need to use the CLI version of psc-ide, as your editor plugin manages the psc-ide-server for you and the editor interface is so much more convenient. If you aren't using an editor plugin, you can use the editor-agnostic pscid tool to manage it for you. Despite that, knowing how things work under the hood is, if not useful, always interesting.
