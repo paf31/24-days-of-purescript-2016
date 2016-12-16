@@ -6,7 +6,7 @@ Suppose you are writing a function using pattern matching. If you have many func
 
 Add Clause will provide a skeleton implementation of a function, given its type. Simply select the type definition and run the Add Clause command.
 
-Case Split allows us to break down a patterns by enumerating all of the cases for a particular data type. Simplfy select the pattern you want to break down, run the Case Split command and enter the name of the data type you want to use.
+Case Split allows us to break down a patterns by enumerating all of the cases for a particular data type. Select the pattern you want to break down, run the Case Split command and enter the name of the data type you want to use.
 
 Here is an example of both in action:
 
