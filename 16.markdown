@@ -1,0 +1,15 @@
+# 16. Add Clause and Case Split
+
+Today's post will highlight two more features in `psc-ide`: Add Clause and Case Split. Both are available on the right-click menu under the PureScript submenu in Atom, but are also available in the other editor plugins.
+
+Suppose you are writing a function using pattern matching. If you have many function arguments or many constructors in your data types, it can be tedious to write out all of the cases manually. This is where these two features can be useful.
+
+Add Clause will provide a skeleton implementation of a function, given its type. Simply select the type definition and run the Add Clause command.
+
+Case Split allows us to break down a patterns by enumerating all of the cases for a particular data type. Simplfy select the pattern you want to break down, run the Case Split command and enter the name of the data type you want to use.
+
+Here is an example of both in action:
+
+![Add Clause and Case Split](images/atom-case-split.gif)
+
+Case split can be particularly useful, since it can be used iteratively to break down problems which require more interesting patterns. As an exercise, you might like to try writing a merge on linked lists using this tool.
