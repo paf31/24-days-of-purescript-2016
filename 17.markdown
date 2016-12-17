@@ -1,0 +1,40 @@
+# 17. Source Maps
+
+Today's post is a guest post by [@nwolverson](https://github.com/nwolverson), who recently added support for _source maps_
+to the PureScript compiler.
+
+-----
+
+The JavaScript ecosystem benefits from some great tooling, particularly developer tools for runtime debugging (and interactive development) in the browser.
+
+The approach of generating readable output from the PureScript compiler means that one can directly debug JavaScript
+without too much pain. However *source maps* have been introduced which developers from CoffeeScript, TypeScript, and
+even the JavaScript world (with ES6 and beyond) are used to using to see the original source in the debug pane.
+
+Since 0.8.1 source maps are available with PureScript too!
+
+## Building with Source Maps
+
+Source maps can be enabled in the PureScript compiler with the `--source-maps` flag, which can be used via Pulp:
+
+```
+pulp build -- --source-maps
+```
+
+Source maps are output for each JS output file, and can be used directly when running on Node or Electron.
+Webpack works well with the PureScript loader, while browserify
+can be persuaded to work; the options are summarised [on this example repository](https://github.com/nwolverson/purescript-sourcemap-test).
+Support for source maps in `psc-bundle` is currently lacking, meaning pulp single-file builds and "optimised" builds with
+browserify/webpack will not support source maps; I'm currently on the way to rectifying this.
+
+## Debugging
+
+PureScript source can be viewed in browsers like Chrome by navigating to the original file, such as `Main.purs` in the source view:
+
+![Breakpoints with source maps](images/sourcemap-breakpoint.png)
+
+Or in Node, for example in VS Code (though currently setting breakpoints does not seem to work):
+
+![Code with source maps](images/sourcemaps-code.png)
+
+In general there are a few limitations: break points may not be accurate, identifiers may not always match up, and as noted `psc-bundle` support is not yet there. But I hope you find this useful all the same!
