@@ -19,6 +19,7 @@
 1. [Instant Rebuild](15.markdown) by [@chexxor](https://github.com/chexxor)
 1. [Add Clause and Case Split](16.markdown)
 1. [Source Maps](17.markdown) by [@nwolverson](https://github.com/nwolverson)
+1. [`psc-package`](18.markdown)
 
 ## License
 
