@@ -20,7 +20,9 @@ The `psc-package` executable is a simple wrapper around various Git commands. Gi
 
 A _package set_ is a collection of package versions which are known to build together. The default package sets are maintained in [a GitHub repository](https://github.com/purescript/package-sets) and verified using Travis. Users can add their packages to a set or update an existing package by sending a pull request.
 
-The `psc-package` executable clones a package set repository, and then uses the data in the local package set repo to determine which versions of dependencies to install.  
+The `psc-package` executable clones a package set repository, and then uses the data in the local package set repo to determine which versions of dependencies to install.
+
+So it's important to note that `psc-package` is not a package manager in the traditional sense. It's not doing dependency solving or traversing configuration files in different repositories. Other tools might implement those approaches later, but for now, I would like to try this simpler option, with the hope of improving the situation for newcomers to PureScript, while still keeping things flexible for more advanced users.
 
 ## Can I use `psc-package` today?
 
