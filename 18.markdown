@@ -1,0 +1,62 @@
+# 18. `psc-package`
+
+Today, I'd like to give a brief introduction to `psc-package`, the simple package manager which was added to the compiler distribution recently in 0.10.2.
+
+## Why do we want a package manager?
+
+Well, first of all, it's not immediately obvious that PureScript needs its own package manager. If you have used PureScript already, chances are you have used Bower to manage your dependencies, and you might be perfectly happy to continue doing that. The addition of `psc-package` should not affect your ability to use the package manager of your choice alongside `psc`.
+
+However, there are some reasons to consider a custom package manager:
+
+- A custom package manager allows us to add language-specific features to package configuration files and tools.
+- Some users do not want to have a dependency on NodeJS, so a package manager which is bundled with the compiler would reduce the number of dependencies.
+- We would like to experiment with other package management strategies. For example, the Haskell community has had great success using Stackage to create bundles of packages which are known to work together, and we would like to try to build something similar.
+
+`psc-package` is in an experimental state right now, but it's possible that it will eventually replace Bower as the default option, depending on how successful the experiment turns out to be.
+
+## How does `psc-package` work?
+
+The `psc-package` executable is a simple wrapper around various Git commands. Git is used to pull in all data, including dependencies themselves but also the _package set description_.
+
+A _package set_ is a collection of package versions which are known to build together. The default package sets are maintained in [a GitHub repository](https://github.com/purescript/package-sets) and verified using Travis. Users can add their packages to a set or update an existing package by sending a pull request.
+
+The `psc-package` executable clones a package set repository, and then uses the data in the local package set repo to determine which versions of dependencies to install.  
+
+## Can I use `psc-package` today?
+
+Yes! `psc-package` is experimental, but ready to use.
+
+To try out `psc-package`, make sure you have a recent PureScript compiler distribution, and then, in an empty directory:
+
+```sh
+psc-package init
+```
+
+This will create a `psc-package.json` configuration file which points to the package set corresponding to the current compiler version. By default, it will install the Prelude as the only dependency.
+
+You can install dependencies using the `install` command:
+
+```sh
+psc-package install transformers
+```
+
+or list available package versions using the `available` command. Once you have installed some dependencies, you can compile them using the `build` command:
+
+```sh
+psc-package build
+```
+
+To synchronize the local state with the package configuration file (if for example you have edited it by hand), use the `update` command.
+
+## Increasing Adoption
+
+I would like to see `psc-package` adoption increase so that we can test whether or not it is a good replacement for Bower.
+
+But in order to increase adoption, we need to do some work:
+
+- We need to start using `psc-package` for more libraries, and including `psc-package.json` files in their repositories. I would like to start doing this for the core libraries soon.
+- We need to add more libraries to the `package-sets` repository, and keep them up to date.
+- We need to add features to the `psc-package` executable. One particularly useful feature which is missing right now is the ability to add the current package to the local (cloned) package set. These sorts of commands should hopefully encourage users to update the `package-sets` repository with their own libraries.
+- We need to add features to the `package-sets` repository. For example, we need a way to automatically apply any minor and patch updates to packages already in the package set.
+
+If you are interested in helping in any of these areas, please have a look at the issue trackers, and join us on IRC to discuss the project!
