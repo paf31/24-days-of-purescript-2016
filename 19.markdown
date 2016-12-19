@@ -1,0 +1,126 @@
+# 19. Intro to the C++ FFI
+
+Today's post is a guest post by @andyarvanitis, the creator of [Pure11](https://github.com/pure11), a C++11 compiler backend for PureScript. This post is an introduction to the Pure11 foreign function interface, which allows us to call C++11 code from PureScript and vice versa.
+
+-----
+
+Today I’ll describe the basics of using the C++ FFI, without getting into any advanced topics. Although it’s possible (and relatively easy) to call PureScript from C++, I’m going to focus on foreign imports.  
+
+## What’s the same (vs JavaScript)?
+
+There are no differences on the PureScript side of things. You define foreign data, value, and function imports just like you do in "traditional" PureScript.
+
+## What’s different?
+
+The implementations of the foreign functions and values are in C++11 instead of JavaScript. Also, foreign functions are **not** curried.
+
+## Foreign code file structure
+
+Just as you provide FFI `*.js` files in your module source directories, you create `*.hh` (header) and `*.cc` (source) files in the same locations. Both sets of foreign language FFI implementations live side-by-side and don’t interfere with one another.
+
+## The C++(11) type system
+
+C++ is a statically typed language, but its type system is quite different from PureScript’s, so the C++11 code that the compiler (transpiler) generates uses some custom classes and a degree of [type erasure](https://en.wikipedia.org/wiki/Type_erasure). However, when writing FFI code, you often won’t need to deal with either of these things, since the generated code takes advantage of C++’s custom implicit type conversions and overloaded operators.**&#42;** &nbsp;When you’re dealing with primitive types or strings, you can just use them directly (see the following table).
+
+PureScript | C++
+---------- | ---
+`Int`      | `int`
+`Number`   | `double`
+`Boolean`  | `bool`
+`Char`     | `char`
+`String`   | `const char *` &nbsp; or &nbsp; `std::string`
+
+For other types, you need to use the custom variant type `any`. There are also types that build on it, and the one you’ll most likely encounter is `any::array`. As you have probably guessed, it’s the representative of PureScript’s `Array` (for all types).
+
+**&#42;** If you’re familiar with C++ and would like to see the details, you can look at the relevant [runtime source code](https://github.com/pure11/pure11/tree/pure11/pcc/runtime).
+
+## An example from the standard library with just numeric types
+
+Let’s look at an example from the standard math package. If you look at [`Math.hh`](https://github.com/pure11/purescript-math/blob/v2.0.0p11/src/Math.hh) (in the same directory as [`Math.js`](https://github.com/pure11/purescript-math/blob/v2.0.0p11/src/Math.js)), you’ll see:
+
+```C++
+...
+#include <cmath>
+#include "PureScript/PureScript.hh"
+
+namespace Math {
+  using namespace PureScript;
+
+  // foreign import abs :: Number -> Number
+  //
+  inline auto abs(const double x) -> double {
+    return std::fabs(x);
+  }
+...
+  // foreign import atan2 :: Number -> Number -> Radians
+  //
+  inline auto atan2(const double y, const double x) -> double {
+    return std::atan2(y, x);
+  }
+...
+  // foreign import pi :: Number
+  //
+  constexpr double pi = 3.141592653589793;
+...
+}
+```
+
+In this particular example, the foreign function implementations are simply inlined wrappers around the C standard `fabs` and `atan2` functions, and are placed into module `Math`’s namespace (preventing name conflicts on the C++ side). We don’t need a `*.cc` file in this case, since all of the module’s functions are just wrappers. Also notice that `atan2` is not curried — the compiler will take care of providing one implicitly.
+
+## An example from the standard library using `any` and `any::array`
+
+Now let’s look at **Prelude’s** `Data.Functor` FFI. First, the JavaScript version, [`Functor.js`](https://github.com/pure11/purescript-prelude/blob/v2.1.0p11/src/Data/Functor.js):
+
+```JavaScript
+exports.arrayMap = function (f) {
+  return function (arr) {
+    var l = arr.length;
+    var result = new Array(l);
+    for (var i = 0; i < l; i++) {
+      result[i] = f(arr[i]);
+    }
+    return result;
+  };
+};
+```
+
+Compare this to [`Functor.hh`](https://github.com/pure11/purescript-prelude/blob/v2.1.0p11/src/Data/Functor.hh) and [`Functor.cc`](https://github.com/pure11/purescript-prelude/blob/v2.1.0p11/src/Data/Functor.cc):
+
+```C++
+#include "PureScript/PureScript.hh"
+
+namespace Data_Functor {
+  using namespace PureScript;	
+
+  // foreign import arrayMap :: forall a b. (a -> b) -> Array a -> Array b
+  //
+  auto arrayMap(const any& f, const any::array& xs) -> any::array; 
+}
+```
+
+```C++
+#include "Functor.hh"
+
+namespace Data_Functor {
+  using namespace PureScript;
+
+  auto arrayMap(const any& f, const any::array& xs) -> any::array {
+    any::array bs;
+    for (auto it = xs.cbegin(), end = xs.cend(); it != end; it++) {
+      bs.emplace_back(f(*it));
+    }
+    return bs;
+  }
+}
+```
+
+You can see similarities between the two functions, at least in their structure. This function requires the `any` variant and `any::array` types mentioned earlier. As with its JavaScript counterpart, `f` is assumed to be a function taking a single argument, and is called when generating the new array’s elements. If you’ve used C++’s [Standard Template Library](https://en.wikipedia.org/wiki/Standard_Template_Library), the iterators and member functions used here should look familiar, since `std::array` conforms to its standard container interfaces.
+
+## A note on memory management
+
+I haven’t talked about how memory is managed in the C++ FFI code, and you might be wondering about it, since C++ does not have automatic memory management (at least not by default). You can read more about it on the [wiki’s memory management](https://github.com/pure11/pure11/wiki/Memory) section, but for these basic examples, you can assume that memory is managed for you.
+
+## More examples
+
+You can find more [FFI examples on the wiki](https://github.com/pure11/pure11/wiki/FFI_Examples).
+
