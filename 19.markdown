@@ -1,6 +1,6 @@
 # 19. Intro to the C++ FFI
 
-Today's post is a guest post by @andyarvanitis, the creator of [Pure11](https://github.com/pure11), a C++11 compiler backend for PureScript. This post is an introduction to the Pure11 foreign function interface, which allows us to call C++11 code from PureScript and vice versa.
+Today's post is a guest post by [@andyarvanitis](https://github.com/andyarvanitis), the creator of [Pure11](https://github.com/pure11), a C++11 compiler backend for PureScript. This post is an introduction to the Pure11 foreign function interface, which allows us to call C++11 code from PureScript and vice versa.
 
 -----
 
