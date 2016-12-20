@@ -1,0 +1,39 @@
+# 20. Try PureScript
+
+[Try PureScript](http://try.purescript.org) is an interactive editor for PureScript code which runs in the browser. It has existed in some form for almost as long as PureScript itself. Today I'd like to highlight some of the recent additions to the Try PureScript application.
+
+I'd like to say a big thanks to [@soupi](https://github.com/soupi) who has recently added most of the features listed below.
+
+## New Libraries
+
+Try PureScript allows you to test code with all 55 of the core PureScript libraries. That's quite a lot of libraries, covering data structures, control structures, testing (including `purescript-quickcheck`) and more.
+
+But that's not all. Thanks to recent changes, it is now much simpler to deploy servers which support different collections of PureScript libraries. We have recently added support for the following libraries, for example:
+
+- [Flare](https://github.com/sharkdp/purescript-flare), a special-purpose, reactive UI library
+- [Slides](https://github.com/soupi/purescript-slides), an EDSL in PureScript for creating presentations
+- [Thermite](https://github.com/paf31/purescript-thermite/), a front-end library for PureScript which uses React
+
+To try out each of these libraries, simply click the corresponding link on the Try PureScript front page.
+
+And we plan to add more libraries - please get in touch on IRC if you would like to add one of your libraries to the list, or if you would like help setting up a server.
+
+## Local Sessions
+
+If you close your browser tab, you will no longer lose your work - Try PureScript saves your work in local storage, so that it will be available again the next time you open the application.
+
+## Share Your Code!
+
+You can also share your code easily with others. The "Share" button on the toolbar will create an anonymous Gist which contains your code. You can share this gist by sharing a simple URL.
+
+This has already been very helpful when teaching PureScript beginners on IRC and Slack.
+
+## Error Highlighting
+
+Try PureScript will now highlight any sections of code which contain errors in red, so that you can easily locate any problematic code.
+
+This is an example of a nice benefit of using the [Ace text editor](https://ace.c9.io) in the user interface. There are many other features which we can support by using the Ace APIs, such as autocompletion and suggestions.
+
+## Conclusion
+
+If you haven't used Try PureScript yet, give it a go for prototyping your next idea. It contains some great features and hopefully will continue to grow into a feature-rich single-file PureScript editor. And please consider contributing! We have plenty of ideas for fun projects to work on on the [issue tracker](https://github.com/purescript/trypurescript/issues).
