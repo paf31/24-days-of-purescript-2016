@@ -49,9 +49,7 @@ Cannot serialize the function: Int -> Int. Functions can't be serialized.
 
 As more and more type level programming is going on in typeclasses thanks to functional dependencies, these features can really help make your typeclass more usable by others.
 
-A more involved but more practical example can be found in the following gist (doesn't run on Try PureScript as we miss lenses):
-
-https://gist.github.com/FrigoEU/441b45128d24b5964bfff7443417160b
+A more involved but more practical example can be found here: http://try.purescript.org/?gist=441b45128d24b5964bfff7443417160b
 
 When compiling this example without the Fail instance, we get the following message:
 
