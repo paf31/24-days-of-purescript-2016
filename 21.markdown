@@ -1,0 +1,74 @@
+# 21. Custom Type Errors
+
+Today's post is a guest post by @FrigoEU, who has recently done work to improve support for _custom type errors_ in the PureScript compiler. Custom type errors were inspired by [this GHC proposal](https://ghc.haskell.org/trac/ghc/wiki/Proposal/CustomTypeErrors) and can make type-level programming far more enjoyable for your users.
+
+-----
+
+Getting good error messages when the compiler rejects your program is very important for the day to day usability of a language. In an attempt to allow library authors to help out with this and generate better error messages for their users, the ability to define "Fail" instances for typeclasses was added to the compiler in v0.9.1. When a user of a typeclass tries to use one of these instances, the compiler will throw a custom error. Which error depends on how you define your Fail instance. For example:
+
+```purescript
+module Main where
+
+import Prelude
+import Control.Monad.Eff.Console (log)
+
+class Serialize a where
+  serialize :: a -> String
+
+instance cannotSerializeFunctions 
+    :: Fail ("Cannot serialize functions.") 
+    => Serialize (a -> b) where
+  serialize _ = "unreachable"
+
+main = do
+  log (serialize ((+) 1))
+```
+Try PureScript link: http://try.purescript.org/?gist=bca55ad0d2a009c2ed5c0c6c5e437c7e
+
+This code will result in the custom error: "Cannot serialize functions". This is nice, but could still be improved. We provided two functions in v0.10.1: TypeString and TypeConcat. These functions are in the "Prim" package, which holds the functions that are always provided by the compiler. The type signatures of TypeString and TypeConcat are:
+
+```purescript
+TypeString :: * -> Symbol
+TypeConcat :: Symbol -> Symbol -> Symbol
+```
+
+The Fail typeclass takes a Symbol as argument, and with the above functions we can construct new Symbols based on the types that the compiler figures out. If we update our above program as follows:
+
+```purescript
+instance cannotSerializeFunctions 
+    :: Fail ("Cannot serialize the function: " <> TypeString (a -> b) <> ". Functions can't be serialized.") 
+    => Serialize (a -> b) where
+  serialize _ = "unreachable"
+```
+Try PureScript link: http://try.purescript.org/?gist=b2ea85258d3245f5fdca1883640ceb70
+
+The compiler will now throw a more detailed error.
+```
+Cannot serialize the function: Int -> Int. Functions can't be serialized.
+``` 
+
+As more and more type level programming is going on in typeclasses thanks to functional dependencies, these features can really help make your typeclass more usable by others.
+
+A more involved but more practical example can be found in the following gist (doesn't run on Try PureScript as we miss lenses):
+
+https://gist.github.com/FrigoEU/441b45128d24b5964bfff7443417160b
+
+When compiling this example without the Fail instance, we get the following message:
+
+```
+No type class instance was found for
+
+    Main.HasField "myfield"
+                  HNil
+                  String
+```
+
+With the Fail instance, we get this:
+
+```
+A custom type error occurred while solving type class constraints:
+
+    Missing field "myfield" of type String
+```
+
+Whenever you write a new type class, think about if you can write any Fail instances that can help your users when making mistakes. They'll be grateful!
