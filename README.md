@@ -22,6 +22,7 @@
 1. [`psc-package`](18.markdown)
 1. [Intro to the C++ FFI](19.markdown) by [@andyarvanitis](https://github.com/andyarvanitis)
 1. [Try PureScript](20.markdown)
+1. [Custom Type Errors](21.markdown) by [@FrigoEU](https://github.com/FrigoEU)
 
 ## License
 
