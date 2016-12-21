@@ -1,6 +1,6 @@
 # 21. Custom Type Errors
 
-Today's post is a guest post by @FrigoEU, who has recently done work to improve support for _custom type errors_ in the PureScript compiler. Custom type errors were inspired by [this GHC proposal](https://ghc.haskell.org/trac/ghc/wiki/Proposal/CustomTypeErrors) and can make type-level programming far more enjoyable for your users.
+Today's post is a guest post by [@FrigoEU](https://github.com/FrigoEU/), who has recently done work to improve support for _custom type errors_ in the PureScript compiler. Custom type errors were inspired by [this GHC proposal](https://ghc.haskell.org/trac/ghc/wiki/Proposal/CustomTypeErrors) and can make type-level programming far more enjoyable for your users.
 
 -----
 
