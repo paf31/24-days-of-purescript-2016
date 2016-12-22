@@ -1,0 +1,123 @@
+# 22. `--dump-corefn`
+
+Today's post is a guest post by [@rightfold](https://github.com/rightfold), who recently added support to export PureScript's intermediate representation to a file. This post will show how we can use that representation to create entirely new compiler backends, while reusing much of the work done by the compiler front-end!
+
+-----
+
+The internal functional representation, called CoreFn, is a data structure
+used by the PureScript compiler as a simpler form than the input language. In
+particular, this simpler form lacks type classes and syntactic sugar (e.g.
+`do`), and names are fully qualified. The CoreFn data structure is used to
+generate JavaScript code. In PureScript 0.10 a new feature was added to dump
+this data structure to JSON files, making it easier to write tools that analyze
+this representation or generate code from it.
+
+PureScript is quite a simple language, and while designed with JavaScript code
+generation in mind, it is independent enough to allow translation to other
+target languages. Such efforts already exist, namely for [C++][pure11] and
+[Erlang][purerl]. Those projects fork the entire compiler however, mainly
+because they were written before the CoreFn dump feature was available.
+
+[pure11]: https://github.com/andyarvanitis/purescript-native
+[purerl]: https://github.com/purerl/purescript
+
+To produce the dump, simply invoke the compiler with the `--dump-corefn` flag:
+
+    $ pulp build --dump-corefn
+
+This will produce a file named `corefn.json` in each module output directory,
+i.e. `output/*/corefn.json`.
+
+Let's look at a simple example:
+
+```purescript
+module Data.Pair where
+
+type Pair a b = {fst :: a, snd :: b}
+
+fst :: forall a b. Pair a b -> a
+fst = _.fst
+
+snd :: forall a b. Pair a b -> b
+snd = _.snd
+
+swap :: forall a b. Pair a b -> Pair b a
+swap p = {fst: snd p, snd: fst p}
+
+class FromPair a e | a -> e where
+    fromPair :: Pair e e -> a
+
+instance fromPairArray :: FromPair (Array e) e where
+    fromPair p = [fst p, snd p]
+```
+
+Compile it as follows:
+
+```bash
+$ psc Pair.purs --dump-corefn
+$ cat output/Data.Pair/corefn.json | json_pp | gist
+https://gist.github.com/rightfold/ed38cacbac307322e2225d13ae68b4b9
+```
+
+Because it's quite a mouthful of JSON, I put it [in a pastebin][dump].
+
+[dump]: https://gist.github.com/rightfold/ed38cacbac307322e2225d13ae68b4b9
+
+The dump somewhat resembles the original program: there is the module name
+(`"Data.Pair"`), a list of imports (`["Prim"]`), a list of exports
+(`["fst", "snd", "swap"]`) and a list of definitions. In the dump, expressions
+follow a syntax similar to S-expressions, but in JSON. For example, an
+expression like `\x -> f (g x)` would be encoded as:
+
+```json
+["Abs", "x", ["App", ["Var", "f"], ["App", ["Var", "g"], ["Var", "x"]]]]
+```
+
+Where "Abs" means "lambda abstraction", and "App" means "function application".
+
+We can now write a program to translate this data structure into JavaScript or
+another language. Let's choose Lua, because Lua already supports records and
+tail-call optimization. The conversion program, [lua.js][lua-codegen], will
+output the following Lua program:
+
+```lua
+-- Data.Pair
+Data_Pair_FromPair = function(fromPair)
+   return {
+      fromPair = fromPair,
+   }
+end
+Data_Pair_snd = function(v)
+   return (v).snd
+end
+Data_Pair_fst = function(v)
+   return (v).fst
+end
+Data_Pair_swap = function(p)
+   return {
+      snd = (Data_Pair_fst)(p),
+      fst = (Data_Pair_snd)(p),
+   }
+end
+Data_Pair_fromPairArray = (Data_Pair_FromPair)(function(p)
+   return {
+      (Data_Pair_fst)(p),
+      (Data_Pair_snd)(p),
+   }
+end)
+Data_Pair_fromPair = function(dict)
+   return (dict).fromPair
+end
+```
+
+[lua-codegen]: https://gist.github.com/rightfold/c1e2d39d1cc066224f7f7b278d9f3b90
+
+Which resembles the original PureScript code quite well. :) Of course, this is
+a very minimal code generator, and doesn't support all the CoreFn syntax (in
+particular literals and case expressions), but it shows that the implementation
+is relatively simple.
+
+It should be noted that at the time of writing the CoreFn dump does not include
+type or line number information. This will probably be added in the future, and
+will allow for more efficient code generation, and easier implementation of
+code generation for typed targets like the CLR and the JVM.
