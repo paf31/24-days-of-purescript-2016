@@ -23,7 +23,7 @@ because they were written before the CoreFn dump feature was available.
 
 To produce the dump, simply invoke the compiler with the `--dump-corefn` flag:
 
-    $ pulp build --dump-corefn
+    $ pulp build -- --dump-corefn
 
 This will produce a file named `corefn.json` in each module output directory,
 i.e. `output/*/corefn.json`.
