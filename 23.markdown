@@ -1,0 +1,101 @@
+# 23. Type-Directed Search
+
+This summer, I had the pleasure of working with [@kritzcreek](https://github.com/kRITZCREEK/) as he wrote his Bachelor's thesis. The title of the thesis was a _Implementing type directed search for PureScript_, and the result was a [pull request](https://github.com/purescript/purescript/pull/2352) on the compiler which added support for _type-directed search_ using typed holes.
+
+I think this feature has great potential to change the way users work in PureScript, so today's post will be an introduction to the feature.
+
+## Typed Holes
+
+Typed holes allow the user to omit certain parts of a program, so that they can be filled in later. This might be because the user can't remember how to implement a certain part of the application, or just because a large function needs to be implemented in smaller parts.
+
+For example, here is an implementation of FizzBuzz written in PureScript:
+
+```purescript
+fizzBuzz :: Int -> String
+fizzBuzz n = part "fizz" 3 <> part "buzz" 5
+  where
+    part s m | n `mod` m == 0 = s
+             | otherwise = ""
+```
+
+You can try this example in Try PureScript [here](http://try.purescript.org/?gist=9df08b8ee1b3eb0903ca544d03f80066&backend=core).
+
+Now suppose our requirements change so that we need to support different strings. For example, we might want multiples of 7 to be converted to the string `"bazz"`. We could append another string explicitly:
+
+```purescript
+fizzBuzz :: Int -> String
+fizzBuzz n = part "fizz" 3 <> part "buzz" 5 <> part "bazz" 7
+  ...
+```
+
+But knowing that we'll soon want to support custom strings, we decide to pull the list of strings and factors into a function argument:
+
+```purescript
+fizzBuzz :: Int -> String
+fizzBuzz = 
+    ?help [ part "fizz" 3
+          , part "buzz" 5
+          ] 
+  where
+    part s m n | n `mod` m == 0 = s
+               | otherwise = ""
+```
+
+Here, the array of functions `[ part "fizz" 3, part "buzz" 5 ]` is a data structure representing the configuration. This could be passed as a function argument, and modified by the caller.
+
+However, the right function to apply and combine these functions was not obvious to me, so I used a typed hole instead.
+
+The typed hole is the term `?help` on the third line. This is a missing part of the program - the type checker will check the rest of the code, but report an error including helpful information about the hole:
+
+```text
+Hole 'help' has the inferred type
+
+  Array (Int -> String) -> Int -> String
+
+in the following context:
+
+  part :: String -> Int -> Int -> String
+```
+
+Crucially, the compiler tells us the inferred type of the hole: `Array (Int -> String) -> Int -> String`.
+
+## Type-Directed Search
+
+Maybe it's still not obvious what to use to implement this function.
+
+However, with type-directed search, the compiler can suggest library functions whose types are compatible with the type of the hole:
+
+```text
+You could substitute the hole with one of these values:
+
+  Data.Foldable.fold          :: forall f m.
+                                   ( Foldable f
+                                   , Monoid m
+                                   ) => f m -> m
+  Data.Monoid.mempty          :: forall m. (Monoid m) => m
+  Unsafe.Coerce.unsafeCoerce  :: forall a b. a -> b
+```
+
+So it turns out that `fold` is exactly the function I want - we wrote down part of our program and the compiler inferred the rest!
+
+You can [try this example](http://try.purescript.org/?gist=efe9fb6ef3652421488611c83de349a5&backend=core) and see that using the suggested value solves the probem.
+
+How does this work?
+
+Well, the compiler already has a notion of _subsumption_ of types. The subsumption relation tells us when one type is more general than another. For example, the type of `fold` is not the same as the type of the hole, but it is more general, in the sense that I can instantiate the type variables `f` and `m` to get the type of the hole.
+
+There are several details which need to be worked out, but the essense of type-directed search is that the compiler looks through any imported libraries and uses the subsumption relation to find values which can work.
+
+The benefit of using the existing type checker code is that we can use all of the existing type system features: row polymorphism, rank-n types, type classes with functional dependencies, and so on - type directed search will apply the right typing rules in each case.
+
+This makes type-directed search a very useful way to explore functions like `fold`, which have very general types. It was not even obvious to me at first that `fold` would solve the problem, but it does! (try to explain why...)
+
+## Further Work
+
+Of course, this example only worked because `fold` was compatible with the type of the hole. It might not have worked if I had refactored the function first.
+
+So we can improve type-directed search by searching for other ways to complete a program at a typed hole: by introducing a new function, or by applying some library function to some arguments, for example.
+
+We can also improve type-directed search by integrating it with `psc-ide` and the suggestions API.
+
+If you are interested in helping out with any of these features, then please come talk to us on IRC!
