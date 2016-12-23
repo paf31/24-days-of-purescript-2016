@@ -88,7 +88,7 @@ There are several details which need to be worked out, but the essense of type-d
 
 The benefit of using the existing type checker code is that we can use all of the existing type system features: row polymorphism, rank-n types, type classes with functional dependencies, and so on - type directed search will apply the right typing rules in each case.
 
-This makes type-directed search a very useful way to explore functions like `fold`, which have very general types. It was not even obvious to me at first that `fold` would solve the problem, but it does! (try to explain why...)
+This makes type-directed search a very useful way to explore functions like `fold`, which have very general types. It was not even obvious to me at first that `fold` would solve the problem, but it does! As an exercise, you might like to explain why `fold` is a valid replacement.
 
 ## Further Work
 
