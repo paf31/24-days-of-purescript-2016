@@ -24,6 +24,7 @@
 1. [Try PureScript](20.markdown)
 1. [Custom Type Errors](21.markdown) by [@FrigoEU](https://github.com/FrigoEU)
 1. [`--dump-corefn`](22.markdown) by [@rightfold](https://github.com/rightfold)
+1. [Type-Directed Search](23.markdown)
 
 ## License
 
