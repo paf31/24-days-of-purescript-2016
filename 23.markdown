@@ -1,6 +1,6 @@
 # 23. Type-Directed Search
 
-This summer, I had the pleasure of working with [@kritzcreek](https://github.com/kRITZCREEK/) as he wrote his Bachelor's thesis. The title of the thesis was a _Implementing type directed search for PureScript_, and the result was a [pull request](https://github.com/purescript/purescript/pull/2352) on the compiler which added support for _type-directed search_ using typed holes.
+This summer, I had the pleasure of working with [@kritzcreek](https://github.com/kRITZCREEK/) as he wrote his Bachelor's thesis. The title of the thesis was _Implementing type directed search for PureScript_, and the result was a [pull request](https://github.com/purescript/purescript/pull/2352) on the compiler which added support for _type-directed search_ using typed holes.
 
 I think this feature has great potential to change the way users work in PureScript, so today's post will be an introduction to the feature.
 
