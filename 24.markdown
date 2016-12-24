@@ -1,0 +1,34 @@
+# 24. Conclusion
+
+That's all for this year!
+
+## Thanks!
+
+We've seen 24 days of great new PureScript features, thanks to the work of many [contributors](https://github.com/purescript/purescript/graphs/contributors). We've seen that PureScript is making great strides in lots of areas, from syntax to type-checking to code generation. The ecosystem is also developing quickly, with big improvements in `psc-ide`, Pursuit and Try PureScript to name just a few.
+
+So a massive thanks to all of the contributors who have been involved in making the compiler and ecosystem so much fun! Let's continue to make a great programming language that we love to use.
+
+I'd also like to say a big thanks to all of the guest authors this year - [@andyarvanitis](https://github.com/andyarvanitis/), [@chexxor](https://github.com/chexxor), [@FrigoEU](https://github.com/FrigoEU), [@kritzcreek](https://github.com/kritzcreek), [@LiamGoodacre](https://github.com/LiamGoodacre), [@nwolverson](https://github.com/nwolverson) and [@rightfold](https://github.com/rightfold).
+
+## Looking Ahead
+
+Let's think about what we can hope to achieve in 2017.
+
+First of all, I'd like to apply to Google Summer of Code again. We had great success two years ago when we got involved via the Haskell.org organization. Last year, we applied but didn't get accepted, although we had our own unofficial summer of code of sorts, as [@kritzcreek](https://github.com/kritzcreek) spent the summer working on [type-directed search](23.markdown). We have [plenty of ideas for projects](https://github.com/purescript/gsoc/issues) again this year, so we will be applying to GSOC once again.
+
+Secondly, I'm hoping that 2017 will be the year when we can release version 1.0 of the PureScript compiler. I like to think of 1.0 as representing our confidence that PureScript is ready for production use, and there will be quite a lot of work needed to get to that point:
+
+- We have identified [the issues we would like to fix in the compiler](https://github.com/purescript/purescript/milestone/22), although that list will probably change somewhat. 
+- We will need to work on tooling to support package sets, and decide if `psc-package` is the right way for us to manage packages in the long term.
+- We need to improve our documentation. We have recently moved all documentation from the wiki into [a new repo](https://github.com/purescript/documentation), so there will be a pull request workflow for submitting documentation changes, and contributors can be confident that their changes will get reviewed, as we try to improve the overall quality of the content.
+- There are some areas where I would like to improve the state of the package ecosystem. PureScript has great some libraries for working in the browser environment and in Node, but there are still gaps. For example, we don't yet have complete bindings to the HTML5 APIs.
+- I would like to answer the question of how to integrate the multiple alternative compiler backends.
+- In addition to adding features, we should also consider what should be _removed_ from the compiler before committing to long term support after 1.0.
+
+This list isn't complete, but it gives an idea of the sorts of problems we will need to solve before 1.0.
+
+## Get Involved!
+
+Are you interested in helping to solve some of these problems? The PureScript community is very welcoming to contributors with all levels of experience, and we're always looking for help! Please get in touch on IRC, and we can help you to get started.
+
+See you in 2017!
