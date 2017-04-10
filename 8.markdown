@@ -49,7 +49,7 @@ We can even receive data from the browser, for example by prompting the user to 
 (Just "I typed this")
 ```
 
-You can experiment with the [other methods defined on the `window` object](https://pursuit.purescript.org/packages/purescript-dom/latest/docs/DOM.HTML.Window#v:alert) too.
+You can experiment with the [other methods defined on the `window` object](https://pursuit.purescript.org/packages/purescript-dom/4.0.0/docs/DOM.HTML.Window#v:alert) too.
 
 PSCi in the browser can also be a great way to build interactive applications and to get immediate feedback. For example, here is an experiment I did with interactive canvas graphics in PSCi (click to view the video on Youtube):
 
