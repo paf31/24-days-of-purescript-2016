@@ -10,13 +10,14 @@ Getting good error messages when the compiler rejects your program is very impor
 module Main where
 
 import Prelude
-import Control.Monad.Eff.Console (log)
+import Effect.Console (log)
+import Prim.TypeError (class Fail, Text(..), Beside(..), Quote(..))
 
 class Serialize a where
   serialize :: a -> String
 
 instance cannotSerializeFunctions 
-    :: Fail ("Cannot serialize functions.") 
+    :: Fail (Text "Cannot serialize functions.") 
     => Serialize (a -> b) where
   serialize _ = "unreachable"
 
@@ -25,18 +26,13 @@ main = do
 ```
 Try PureScript link: http://try.purescript.org/?gist=bca55ad0d2a009c2ed5c0c6c5e437c7e
 
-This code will result in the custom error: "Cannot serialize functions". This is nice, but could still be improved. We provided two functions in v0.10.1: TypeString and TypeConcat. These functions are in the "Prim" package, which holds the functions that are always provided by the compiler. The type signatures of TypeString and TypeConcat are:
+This code will result in the custom error: "Cannot serialize functions". This is nice, but could still be improved through functions in the "Prim.TypeError" package. 
 
-```purescript
-TypeString :: * -> Symbol
-TypeConcat :: Symbol -> Symbol -> Symbol
-```
-
-The Fail typeclass takes a Symbol as argument, and with the above functions we can construct new Symbols based on the types that the compiler figures out. If we update our above program as follows:
+If we update our above program as follows:
 
 ```purescript
 instance cannotSerializeFunctions 
-    :: Fail ("Cannot serialize the function: " <> TypeString (a -> b) <> ". Functions can't be serialized.") 
+    :: Fail (Beside (Beside (Text "Cannot serialize the function: ") (Quote (a -> b))) (Text ". Functions can't be serialized."))
     => Serialize (a -> b) where
   serialize _ = "unreachable"
 ```
